@@ -1,0 +1,26 @@
+type: "article"
+author: "John Doe"
+title: "My first article"
+date: "2011-07-01"
+time: "12:00"
+tags: "main programming perl"
+
+START_ARTICLE
+This is my first article published with bazinga. It will show you some features now:
+
+* This makes a list point
+* and this too
+* unsorted lists are easy...
+
+*bold text* is as easy to write as _underlined text_. /italic text/ too, of course.
+
+If you want to insert a code snipped, bazinga has a special feature for that:
+
+CODE_START
+#!/usr/bin/perl
+use strict;
+
+print "hello world\n .... BAZINGA!\n";
+CODE_END
+
+END_ARTICLE
