@@ -6,8 +6,9 @@ README file for bazinga 0.1a
 2. ..... Setup
 2.1. ... Configuration
 3. ..... Features
-3.1. ... Credits
-3.2. ... License
+3.1. ... Usage Scenarios
+4. ..... Credits
+4.1. ... License
 
 
 1. WHAT IS BAZINGA?
@@ -42,5 +43,28 @@ I chose the name bazinga because I'm a huge fan of the TV series 'Big Bang Theor
 one of the main actors (Sheldon Cooper) uses the phrase "Bazinga!" to tell others that he
 made a joke. Clearly, bazinga is too a little bit of a joke ;).
 
+
+2. SETUP
+
+Setup is pretty easy. If you read this you might already as well have installed it. It
+doesn't need to be located anywhere special. The only file that needs to be in the right
+place is the main configuration file, which must be located in "~/.bazinga/bazinga.conf"
+or equally symlinked to this location. Some sample configuration files can be found in the
+conf/ directory.
+
+
+2.1. CONFIGURATION
+
+The easiest way to get everything started is to copy one of the example configurations
+from the conf/ directory to ~/.bazinga/bazinga.conf and edit it to fit your needs.
+Configuration may look Perl'ish (well, because it is), but should be pretty self-explaining.
+
+
+3. FEATURES
+
+bazinga doesn't have many features except some basic text-formatting rules, which can be
+taken from the examples/ directory. These examples should cover the range of what is
+possible. If you have feature requests or want something added, please contact me or 
+implement it yourself and send me a patch. Would be awesome.
 
 

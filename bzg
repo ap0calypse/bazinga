@@ -7,6 +7,7 @@ use Env qw(HOME);
 # project:      bazinga
 # description:  free special blogging tool, inspired by nanoblogger
 # author:       Manuel Fill (ap0calypse@agitatio.org)
+# license:      
 
 my $VERSION = "0.1a";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
@@ -24,8 +25,9 @@ sub print_usage {
         bzg add FILE
         bzg delete ID
         bzg replace ID FILE
-        bzg comment FILE
+        bzg comment ID FILE
         bzg check FILE
+        bzg update LOCAL | REMOTE
 
     examples:
 
@@ -33,6 +35,8 @@ sub print_usage {
         bzg replace 6783423 corrected_article.txt
         bzg comment comment_someone_mailed_me.txt
         bzg check maybe_corrupt_article.txt
+        bzg update LOCAL
+        bzg update REMOTE
 
 );
 }
@@ -49,13 +53,13 @@ if ($ARGV[0] eq "add") {
         print " DONE!\n";
     }
     else {
-        print "$ARGV[1] is not a file, please specify a path to a article file.\n";
+        print "$ARGV[1] is not a file, please specify a path to the article file.\n";
     }
 }
 elsif ($ARGV[0] eq "delete") {
     if ($ARGV[1] && $ARGV[1] =~ m/[[:alnum:]]{16}/) {
         print "deleting article $ARGV[1] from articles ... ";
-#        del_article($ARGV[1]);
+#        delete_article($ARGV[1]);
         print " DONE!\n";
     }
     else {
@@ -66,11 +70,11 @@ elsif ($ARGV[0] eq "replace") {
     if ($ARGV[1] && $ARGV[1] =~ m/[[:alnum:]]{16}/) {
         if ($ARGV[2] && -e $ARGV[2]) {
             print "replacing article $ARGV[1] with $ARGV[2] ... ";
-#        repl_article($ARGV[1], $ARGV[2]);
+#        replace_article($ARGV[1], $ARGV[2]);
         print " DONE!\n";
         }
         else {
-            print "$ARGV[2] is not a file, please specify a path to a article file.\n";
+            print "$ARGV[2] is not a file, please specify a path to the article file.\n";
         }
     }
     else {
@@ -84,6 +88,43 @@ elsif ($ARGV[0] eq "check") {
         print " DONE!\n";
     }
     else {
-        print "$ARGV[1] is not a file, please specify a path to a article file.\n";
+        print "$ARGV[1] is not a file, please specify a path to the article file.\n";
     }
 }
+elsif ($ARGV[0] eq "comment") {
+    if ($ARGV[1] && $ARGV[1] =~ m/[[:alnum:]]{16}/) {
+        if ($ARGV[2] && -e $ARGV[2]) {
+            print "commenting article $ARGV[1] with $ARGV[2] ... ";
+#        comment_article($ARGV[1], $ARGV[2]);
+        print " DONE!\n";
+        }
+        else {
+            print "$ARGV[2] is not a file, please specify a path to the comment file.\n";
+        }
+    }
+    else {
+        print "$ARGV[1] is not a valid id, please specify a correct id.\n";
+    }
+}
+elsif ($ARGV[0] eq "update") {
+    if ($ARGV[1] && $ARGV[1] eq "LOCAL") {
+        print "updating local bazinga structure ... ";
+#        update_bazinga($ARGV[1]);
+        print " DONE!\n";
+    }
+    elsif ($ARGV[1] && $ARGV[1] eq "REMOTE") {
+        print "updating remote bazinga structure  ... ";
+#        update_bazinga($ARGV[1]);
+        print " DONE!\n";
+    }
+    else {
+        print "$ARGV[1] is not a valid identifier. Needs to be LOCAL or REMOTE.\n";
+    }
+}
+
+sub add_article {};
+sub delete_article {};
+sub replace_article {};
+sub comment_article {};
+sub check_article {};
+sub update_bazinga {};
