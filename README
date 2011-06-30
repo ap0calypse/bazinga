@@ -1,0 +1,46 @@
+README file for bazinga 0.1a
+
+1. ..... What is bazinga?
+1.1. ... Why is it better than XYZ?
+1.2. ... Name
+2. ..... Setup
+2.1. ... Configuration
+3. ..... Features
+3.1. ... Credits
+3.2. ... License
+
+
+1. WHAT IS BAZINGA?
+
+bazinga is a small and (maybe) simple commandline interface which lets you publish articles
+on a blog without the need of PHP/MySQL or CGI. It produces plain HTML-files in a clean and
+reasonable directory structure and links them together. This seems quite static at a first 
+look, but the advantages of this model are clear: you don't need a webhoster which allows
+previously mentioned features. The pages produced should be 100 % display-able by any common
+HTTP server.
+
+
+1.1. WHY IS IT BETTER THAN XYZ?
+
+To be honest, it clearly isn't better than any other blog software and maybe cannot even 
+compete with them in flexibility and feature-richness, but the clear advantages are:
+
+    - completely independent from fancy features (eq. PHP)
+    - easy to maintain
+    - easy to make backups (just backup the files and you're fine)
+    - commandline interface ('bzg') (that's where git and nanoblogger inspired me)
+
+Of course, if you aren't used to work with terminals or generally with text editors
+it might be confusing, but if you are a person like me (and I guess you are, otherwise:
+why are you reading this crap anyway?) and you like working on terminals, it might be
+just the piece of software you always wanted.
+
+
+1.2. NAME
+
+I chose the name bazinga because I'm a huge fan of the TV series 'Big Bang Theory', where
+one of the main actors (Sheldon Cooper) uses the phrase "Bazinga!" to tell others that he
+made a joke. Clearly, bazinga is too a little bit of a joke ;).
+
+
+
