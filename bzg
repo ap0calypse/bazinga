@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Env qw(HOME);
+use Data::Dumper;
+use Env qw(HOME USERNAME);
 
 
 # project:      bazinga
@@ -48,7 +49,7 @@ if ($ARGV[0] eq "help") {
 if ($ARGV[0] eq "add") {
     if ($ARGV[1] && -e $ARGV[1]) {
         print "parsing file $ARGV[1] ... ";
-#        add_article($ARGV[1]);
+        add_article($ARGV[1]);
         print " DONE!\n";
     }
     else {
@@ -106,8 +107,26 @@ elsif ($ARGV[0] eq "update") {
     }
 }
 
-sub add_article {};
-sub delete_article {};
-sub replace_article {};
-sub check_article {};
-sub update_bazinga {};
+my %art_hash;
+my $art_txt;
+sub add_article {
+    my $article_file = shift;
+#    my %art_hash;
+    open my $ARTFD ,"< $article_file" or die "File could not be opened, please check permissions.\n";
+    while (<$ARTFD>) {
+        $art_hash{'type'} = $1 and next if m/^type: *\"(article|comment){1}\".*$/;
+        $art_hash{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
+        if (/START_ARTICLE/ .. /END_ARTICLE/) {
+            $art_txt .= $_ if $_ !~ /.*(END_ARTICLE|START_ARTICLE){1}.*/ ;
+        }
+    }
+    close $ARTFD;
+}
+
+print Dumper(%art_hash);
+print Dumper($art_txt);
+    
+sub delete_article {}
+sub replace_article {}
+sub check_article {}
+sub update_bazinga {}
