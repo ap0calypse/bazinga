@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Data::Dumper;
 use Env qw(HOME USERNAME);
-
+use v5.10;
 
 # project:      bazinga
 # description:  free special blogging tool, inspired by nanoblogger
@@ -41,32 +41,34 @@ sub print_usage {
 );
 }
 
-
-if ($ARGV[0] eq "help") {
-    print_usage and exit 0;
+given ($ARGV[0]) {
+    when (/help?/) {
+        print_usage and exit 0;
+    }
+    when (/add?/) {
+        given ($ARGV[1]) {
+            when ($ARGV[1] && -e $ARGV[1]) {
+                print "parsing file $ARGV[1] ... ";
+                add_article($ARGV[1]);
+                print "DONE!\n";
+            }
+            default { print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; }
+        }
+    }
+    when (/delete?/) {
+        given ($ARGV[1]) {
+            when ($ARGV[1] && $ARGV[1] =~ m/[[:alnum:]]{16}/) {
+                print "deleting article $ARGV[1] from articles ... ";
+#                delete_article($ARGV[1]);
+                print " DONE!\n";
+            }
+            default { print "$ARGV[1] is not a valid id, please specify a correct id.\n"; }
+        }
+    }
+    default { print "You entered an unknown parameter, please check.\n"; }
 }
 
-if ($ARGV[0] eq "add") {
-    if ($ARGV[1] && -e $ARGV[1]) {
-        print "parsing file $ARGV[1] ... ";
-        add_article($ARGV[1]);
-        print " DONE!\n";
-    }
-    else {
-        print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n";
-    }
-}
-elsif ($ARGV[0] eq "delete") {
-    if ($ARGV[1] && $ARGV[1] =~ m/[[:alnum:]]{16}/) {
-        print "deleting article $ARGV[1] from articles ... ";
-#        delete_article($ARGV[1]);
-        print " DONE!\n";
-    }
-    else {
-        print "$ARGV[1] is not a valid id, please specify a correct id.\n";
-    }
-}
-elsif ($ARGV[0] eq "replace") {
+if ($ARGV[0] eq "replace") {
     if ($ARGV[1] && $ARGV[1] =~ m/[[:alnum:]]{16}/) {
         if ($ARGV[2] && -e $ARGV[2]) {
             print "replacing article $ARGV[1] with $ARGV[2] ... ";
