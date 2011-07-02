@@ -7,7 +7,7 @@ date: "2011-07-01"
 time: "12:00"
 tags: "main programming perl"
 
-START_ARTICLE
+START_TEXT
 This is my first article published with bazinga. It will show you some features now:
 
 * This makes a list point
@@ -25,4 +25,4 @@ use strict;
 print "hello world\n .... BAZINGA!\n";
 CODE_END
 
-END_ARTICLE
+END_TEXT

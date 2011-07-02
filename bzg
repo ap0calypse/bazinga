@@ -117,8 +117,8 @@ sub add_article {
     while (<$ARTFD>) {
         $art_hash{'type'} = $1 and next if m/^type: *\"(article|comment){1}\".*$/;
         $art_hash{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
-        if (/START_ARTICLE/ .. /END_ARTICLE/) {
-            $art_txt .= $_ if $_ !~ /.*(END_ARTICLE|START_ARTICLE){1}.*/ ;
+        if (/START_TEXT/ .. /END_TEXT/) {
+            $art_txt .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
         }
     }
     close $ARTFD;

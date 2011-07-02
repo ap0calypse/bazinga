@@ -7,7 +7,7 @@ date: "2011-07-02"
 time: "12:00"
 id: "193fe548ac3452fe"
 
-START_COMMENT
+START_TEXT
 
 it is also possible to use formatting rules in comments. You can _underline_ your text or make it
 *bold*. anything possible in articles, is possible in comments too.
@@ -19,4 +19,4 @@ use strict;
 print "hello world\n .... BAZINGA!\n";
 CODE_END
 
-END_COMMENT
+END_TEXT
