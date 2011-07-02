@@ -47,7 +47,7 @@ given ($ARGV[0]) {
     }
     when (/add?/) {
         given ($ARGV[1]) {
-            when ($ARGV[1] && -e $ARGV[1]) {
+            when (-e $ARGV[1]) {
                 print "parsing file $ARGV[1] ... ";
                 add_article($ARGV[1]);
                 print "DONE!\n";
@@ -57,7 +57,7 @@ given ($ARGV[0]) {
     }
     when (/delete?/) {
         given ($ARGV[1]) {
-            when ($ARGV[1] && $ARGV[1] =~ m/[[:alnum:]]{16}/) {
+            when ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
                 print "deleting article $ARGV[1] from articles ... ";
 #                delete_article($ARGV[1]);
                 print " DONE!\n";
@@ -65,48 +65,47 @@ given ($ARGV[0]) {
             default { print "$ARGV[1] is not a valid id, please specify a correct id.\n"; }
         }
     }
+    when (/replace?/) {
+        given ($ARGV[1]) {
+            when ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
+                given ($ARGV[2]) {
+                    when (-e $ARGV[2]) {
+                        print "replacing article $ARGV[1] with $ARGV[2] ... ";
+#                        check_article($ARGV[1]);
+                        print " DONE!\n";
+                    }
+                    default { print "$ARGV[1] is not a file, please specify a path to the article file.\n"; }
+                }
+            }
+            default { print "$ARGV[1] is not a valid id, please specify a correct id.\n"; }
+        }
+    }
+    when (/check?/) {
+        given ($ARGV[1]) {
+            when (-e $ARGV[1]) {
+                print "checking article file $ARGV[1] for correctness ... ";
+#                check_article($ARGV[1]);
+                print "DONE!\n";
+            }
+            default { print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; }
+        }
+    }
+    when (/update?/) {
+        given ($ARGV[1]) {
+            when (/LOCAL?/) {
+                print "updating local bazinga structure ... ";
+#                update_bazinga($ARGV[1]);
+                print "DONE!\n";
+            }
+            when (/REMOTE?/) {
+                print "updating remote bazinga structure ... ";
+#                update_bazinga($ARGV[1]);
+                print "DONE!\n";
+            }
+            default { print "$ARGV[1] is not a valid identifier. Needs to be LOCAL or REMOTE.\n"; }
+        }
+    }
     default { print "You entered an unknown parameter, please check.\n"; }
-}
-
-if ($ARGV[0] eq "replace") {
-    if ($ARGV[1] && $ARGV[1] =~ m/[[:alnum:]]{16}/) {
-        if ($ARGV[2] && -e $ARGV[2]) {
-            print "replacing article $ARGV[1] with $ARGV[2] ... ";
-#        replace_article($ARGV[1], $ARGV[2]);
-        print " DONE!\n";
-        }
-        else {
-            print "$ARGV[2] is not a file, please specify a path to the article file.\n";
-        }
-    }
-    else {
-        print "$ARGV[1] is not a valid id, please specify a correct id.\n";
-    }
-}
-elsif ($ARGV[0] eq "check") {
-    if ($ARGV[1] && -e $ARGV[1]) {
-        print "checking article $ARGV[1] for correctness ... ";
-#        check_article($ARGV[1]);
-        print " DONE!\n";
-    }
-    else {
-        print "$ARGV[1] is not a file, please specify a path to the article file.\n";
-    }
-}
-elsif ($ARGV[0] eq "update") {
-    if ($ARGV[1] && $ARGV[1] eq "LOCAL") {
-        print "updating local bazinga structure ... ";
-#        update_bazinga($ARGV[1]);
-        print " DONE!\n";
-    }
-    elsif ($ARGV[1] && $ARGV[1] eq "REMOTE") {
-        print "updating remote bazinga structure  ... ";
-#        update_bazinga($ARGV[1]);
-        print " DONE!\n";
-    }
-    else {
-        print "$ARGV[1] is not a valid identifier. Needs to be LOCAL or REMOTE.\n";
-    }
 }
 
 my %art_hash;
