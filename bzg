@@ -49,7 +49,7 @@ given ($ARGV[0]) {
         given ($ARGV[1]) {
             when (-e $ARGV[1]) {
                 print "parsing file $ARGV[1] ... ";
-                add_article($ARGV[1]);
+                process_article($ARGV[1]);
                 print "DONE!\n";
             }
             default { print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; }
@@ -110,7 +110,7 @@ given ($ARGV[0]) {
 
 my %art_hash;
 my $art_txt;
-sub add_article {
+sub process_article {
     my $article_file = shift;
 #    my %art_hash;
     open my $ARTFD ,"< $article_file" or die "File could not be opened, please check permissions.\n";
@@ -122,6 +122,13 @@ sub add_article {
         }
     }
     close $ARTFD;
+# here we need to add some error correction in case there is something missing in %art_hash ...
+    add_article(\%art_hash);
+}
+
+sub add_article {
+    my $art_hash_ref = shift;
+    print "Adding article '" . $art_hash_ref->{'title'} . "' to bazinga structure ...\n";
 }
 
 print Dumper(%art_hash);
