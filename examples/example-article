@@ -10,10 +10,6 @@ tags: "main programming perl"
 START_TEXT
 This is my first article published with bazinga. It will show you some features now:
 
-* This makes a list point
-* and this too
-* unsorted lists are easy...
-
 *bold text* is as easy to write as _underlined text_. /italic text/ too, of course.
 
 If you want to insert a code snipped, bazinga has a special feature for that:

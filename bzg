@@ -118,7 +118,7 @@ sub process_article {
         $art_hash{'type'} = $1 and next if m/^type: *\"(article|comment){1}\".*$/;
         $art_hash{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
         if (/START_TEXT/ .. /END_TEXT/) {
-            $art_txt .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
+            $art_hash{'text'} .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
         }
     }
     close $ARTFD;
@@ -133,22 +133,42 @@ sub add_article {
     my $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
     print "generated ID: $random\n";
     my $output = generate_html($art_hash_ref);
-    print $output;
+    open my $OUTFD, "> ./blog/$random.html" or die "$!";
+    print $OUTFD $output;
+    close $OUTFD;
+
+    open my $INDEXFD, ">> ./blog/index" or die "$!";
+    print $INDEXFD "$random:$art_hash_ref->{'tags'}:$art_hash_ref->{'title'}\n";
+    close $INDEXFD;
 }
 
 sub generate_html {
     my $ref = shift;
-    my $generated;
-
-    $generated = "<HTML>" .
-                 "<HEAD><TITLE>" . $ref->{'title'} .
-                 "</TITLE></HEAD>" .
-                 "<BODY></BODY>" .
-                 "</HTML>";
+    $ref->{'text'} =~ s/\n/<br \/>\n/g;
+    $ref->{'text'} =~ s/CODE_START/<div class=\'code\'>/g;
+    $ref->{'text'} =~ s/CODE_END/<\/div>/g;
+    $ref->{'text'} =~ s/\/((\s|\w)+)\//<i>$1<\/i>/g;
+    $ref->{'text'} =~ s/\*((\s|\w)+)\*/<b>$1<\/b>/g;
+    $ref->{'text'} =~ s/_((\s|\w)+)_/<u>$1<\/u>/g;
+    my $generated = <<"EOHTML";
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>$ref->{'title'}</title>
+</head>
+<body>
+<h1>$ref->{'title'}</h1>
+$ref->{'text'}
+</body>
+</html>
+EOHTML
     return $generated;
+
 }
 
-#print Dumper(%art_hash);
+print Dumper(%art_hash);
 #print Dumper($art_txt);
     
 sub delete_article {}
