@@ -59,7 +59,7 @@ given ($ARGV[0]) {
         given ($ARGV[1]) {
             when ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
                 print "deleting article $ARGV[1] from articles ... ";
-#                delete_article($ARGV[1]);
+                delete_article($ARGV[1]);
                 print " DONE!\n";
             }
             default { print "$ARGV[1] is not a valid id, please specify a correct id.\n"; }
@@ -171,7 +171,24 @@ EOHTML
 print Dumper(%art_hash);
 #print Dumper($art_txt);
     
-sub delete_article {}
+sub delete_article {
+    my $id = shift;
+    my $temp;
+    open my $INDEXFD, "< ./blog/index" or die "$!";
+    while (<$INDEXFD>) {
+        if (s/^$id.+$//gmx) {
+            chomp;
+        }
+        $temp .= $_;
+    }
+    unlink "./blog/$id.html";
+    print $temp;
+    close $INDEXFD;
+    open my $INDEXWR, "> ./blog/index" or die "$!";
+    print $INDEXWR $temp;
+    close $INDEXWR;
+    
+}
 sub replace_article {}
 sub check_article {}
 sub update_bazinga {}
