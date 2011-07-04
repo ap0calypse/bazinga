@@ -129,10 +129,27 @@ sub process_article {
 sub add_article {
     my $art_hash_ref = shift;
     print "Adding article '" . $art_hash_ref->{'title'} . "' to bazinga structure ...\n";
+    
+    my $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
+    print "generated ID: $random\n";
+    my $output = generate_html($art_hash_ref);
+    print $output;
 }
 
-print Dumper(%art_hash);
-print Dumper($art_txt);
+sub generate_html {
+    my $ref = shift;
+    my $generated;
+
+    $generated = "<HTML>" .
+                 "<HEAD><TITLE>" . $ref->{'title'} .
+                 "</TITLE></HEAD>" .
+                 "<BODY></BODY>" .
+                 "</HTML>";
+    return $generated;
+}
+
+#print Dumper(%art_hash);
+#print Dumper($art_txt);
     
 sub delete_article {}
 sub replace_article {}
