@@ -10,44 +10,25 @@ use v5.10;
 # author:       Manuel Fill (ap0calypse@agitatio.org)
 # license:      
 
+
+# version info, config locations, ...
 my $VERSION = "0.1a";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 
+
+# param check, we die if there is the wrong count
 die "not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
 die "configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
 
-sub print_usage {
-    print qq(
-    bazinga $VERSION
 
-    quick overview:
-    
-        bzg help
-        bzg add FILE
-        bzg delete ID
-        bzg replace ID FILE
-        bzg check FILE
-        bzg update LOCAL | REMOTE
-
-    examples:
-
-        bzg add my_fancy_new_article.txt
-        bzg add comment_from_some_dude.txt
-        bzg replace 6783423 corrected_article.txt
-        bzg check maybe_corrupt_article.txt
-        bzg update LOCAL
-        bzg update REMOTE
-
-);
-}
-
+# arg-list processing
 given ($ARGV[0]) {
     when (/help?/) {
-        print_usage and exit 0;
+        print_usage() and exit 0;
     }
     when (/add?/) {
         given ($ARGV[1]) {
-            when (-e $ARGV[1]) {
+            when ($ARGV[1] ne "" && -e $ARGV[1]) {
                 print "parsing file $ARGV[1] ... ";
                 process_article($ARGV[1]);
                 print "DONE!\n";
@@ -108,11 +89,58 @@ given ($ARGV[0]) {
     default { print "You entered an unknown parameter, please check.\n"; }
 }
 
-my %art_hash;
-my $art_txt;
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: print_usage
+# needs:    nothing
+# returns:  nothing
+# calls:    nothing
+# purpose:  displays short usage information
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub print_usage {
+    print qq(
+    bazinga $VERSION
+
+    quick overview:
+    
+        bzg help
+        bzg add FILE
+        bzg delete ID
+        bzg replace ID FILE
+        bzg check FILE
+        bzg update LOCAL | REMOTE
+
+    examples:
+
+        bzg add my_fancy_new_article.txt
+        bzg add comment_from_some_dude.txt
+        bzg replace 6783423 corrected_article.txt
+        bzg check maybe_corrupt_article.txt
+        bzg update LOCAL
+        bzg update REMOTE
+
+);
+}
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: process_article
+# needs:    path to article file
+# returns:  nothing
+# calls:    add_article
+# purpose:  processes the article file and fills a hash with the article information
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 sub process_article {
     my $article_file = shift;
-#    my %art_hash;
+    my %art_hash;
     open my $ARTFD ,"< $article_file" or die "File could not be opened, please check permissions.\n";
     while (<$ARTFD>) {
         $art_hash{'type'} = $1 and next if m/^type: *\"(article|comment){1}\".*$/;
@@ -125,6 +153,18 @@ sub process_article {
 # here we need to add some error correction in case there is something missing in %art_hash ...
     add_article(\%art_hash);
 }
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: add_article
+# needs:    reference to the article-hash
+# returns:  nothing
+# calls:    generate_html
+# purpose:  processes the article hash and writes out the html-document to blog structure / index
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub add_article {
     my $art_hash_ref = shift;
@@ -141,6 +181,18 @@ sub add_article {
     print $INDEXFD "$random:$art_hash_ref->{'tags'}:$art_hash_ref->{'title'}\n";
     close $INDEXFD;
 }
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: generate_html
+# needs:    reference to article hash
+# returns:  html-ified version of the text
+# calls:    nothing
+# purpose:  translates the article jargon to clean html
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub generate_html {
     my $ref = shift;
@@ -168,9 +220,18 @@ EOHTML
 
 }
 
-print Dumper(%art_hash);
-#print Dumper($art_txt);
-    
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: delete article
+# needs:    valid id from an article
+# returns:  nothing
+# calls:    nothing
+# purpose:  deletes an article and the corresponding id from the index
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 sub delete_article {
     my $id = shift;
     my $temp;
@@ -182,13 +243,17 @@ sub delete_article {
         $temp .= $_;
     }
     unlink "./blog/$id.html";
-    print $temp;
     close $INDEXFD;
     open my $INDEXWR, "> ./blog/index" or die "$!";
     print $INDEXWR $temp;
     close $INDEXWR;
     
 }
+
+
+
+
+
 sub replace_article {}
 sub check_article {}
 sub update_bazinga {}
