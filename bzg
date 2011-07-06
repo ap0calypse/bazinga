@@ -30,7 +30,7 @@ given ($ARGV[0]) {
         given ($ARGV[1]) {
             when ($ARGV[1] ne "" && -e $ARGV[1]) {
                 print "parsing file $ARGV[1] ... ";
-                process_article($ARGV[1]);
+                process_content($ARGV[1]);
                 print "DONE!\n";
             }
             default { print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; }
@@ -40,7 +40,7 @@ given ($ARGV[0]) {
         given ($ARGV[1]) {
             when ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
                 print "deleting article $ARGV[1] from articles ... ";
-                delete_article($ARGV[1]);
+                delete_content($ARGV[1]);
                 print " DONE!\n";
             }
             default { print "$ARGV[1] is not a valid id, please specify a correct id.\n"; }
@@ -117,6 +117,7 @@ sub print_usage {
     examples:
 
         bzg add my_fancy_new_article.txt
+        bzg add about_me_page.txt
         bzg add comment_from_some_dude.txt
         bzg replace 6783423 corrected_article.txt
         bzg check maybe_corrupt_article.txt
@@ -131,27 +132,27 @@ sub print_usage {
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# function: process_article
-# needs:    path to article file
+# function: process_content
+# needs:    path to content file
 # returns:  nothing
-# calls:    add_article
-# purpose:  processes the article file and fills a hash with the article information
+# calls:    add_content
+# purpose:  processes the content file and fills a hash with the content information
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-sub process_article {
-    my $article_file = shift;
-    my %art_hash;
-    open my $ARTFD ,"< $article_file" or die "File could not be opened, please check permissions.\n";
-    while (<$ARTFD>) {
-        $art_hash{'type'} = $1 and next if m/^type: *\"(article|comment){1}\".*$/;
-        $art_hash{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
+sub process_content {
+    my $content_file = shift;
+    my %cont_hash;
+    open my $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
+    while (<$CONTFD>) {
+        $cont_hash{'type'} = $1 and next if m/^type: *\"(article|comment|page){1}\".*$/;
+        $cont_hash{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
         if (/START_TEXT/ .. /END_TEXT/) {
-            $art_hash{'text'} .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
+            $cont_hash{'text'} .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
         }
     }
-    close $ARTFD;
+    close $CONTFD;
 # here we need to add some error correction in case there is something missing in %art_hash ...
-    add_article(\%art_hash);
+    add_content(\%cont_hash);
 }
 
 
@@ -159,26 +160,26 @@ sub process_article {
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# function: add_article
-# needs:    reference to the article-hash
+# function: add_content
+# needs:    reference to the content-hash
 # returns:  nothing
 # calls:    generate_html
-# purpose:  processes the article hash and writes out the html-document to blog structure / index
+# purpose:  processes the content hash and writes out the html-document to blog structure / index
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-sub add_article {
-    my $art_hash_ref = shift;
-    print "Adding article '" . $art_hash_ref->{'title'} . "' to bazinga structure ...\n";
+sub add_content {
+    my $cont_hash_ref = shift;
+    print "Adding content '" . $cont_hash_ref->{'title'} . "' to bazinga structure ...\n";
     
     my $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
     print "generated ID: $random\n";
-    my $output = generate_html($art_hash_ref);
+    my $output = generate_html($cont_hash_ref);
     open my $OUTFD, "> ./blog/$random.html" or die "$!";
     print $OUTFD $output;
     close $OUTFD;
 
     open my $INDEXFD, ">> ./blog/index" or die "$!";
-    print $INDEXFD "$random:$art_hash_ref->{'tags'}:$art_hash_ref->{'title'}\n";
+    print $INDEXFD "$random:$cont_hash_ref->{'tags'}:$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'}\n";
     close $INDEXFD;
 }
 
@@ -188,10 +189,10 @@ sub add_article {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: generate_html
-# needs:    reference to article hash
+# needs:    reference to content hash
 # returns:  html-ified version of the text
 # calls:    nothing
-# purpose:  translates the article jargon to clean html
+# purpose:  translates the content jargon to clean html
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub generate_html {
@@ -225,14 +226,14 @@ EOHTML
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# function: delete article
-# needs:    valid id from an article
+# function: delete content
+# needs:    valid id from a page / article / comment
 # returns:  nothing
 # calls:    nothing
-# purpose:  deletes an article and the corresponding id from the index
+# purpose:  deletes any content and the corresponding id from the index
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-sub delete_article {
+sub delete_content {
     my $id = shift;
     my $temp;
     open my $INDEXFD, "< ./blog/index" or die "$!";
@@ -254,6 +255,6 @@ sub delete_article {
 
 
 
-sub replace_article {}
-sub check_article {}
+sub replace_content {}
+sub check_content {}
 sub update_bazinga {}
