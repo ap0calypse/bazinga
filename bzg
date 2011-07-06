@@ -15,7 +15,10 @@ use v5.10;
 # version info, config locations, ...
 my $VERSION = "0.1a";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
+my $CSS = "$HOME/.bazinga/style.css";
 my %CONF_HASH;
+
+
 
 open my $CONFFD, "< $CONFIG" or die "can't access config, please check $CONFIG\n";
 while (<$CONFFD>) {
@@ -40,7 +43,7 @@ close $CONFFD;
 # param check, we die if there is the wrong count
 die "not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
 die "configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
-
+print "you have no custom $CSS, that's ok if you want standard layout.\n" unless (-e $CSS);
 
 # arg-list processing
 if ($ARGV[0]) {
@@ -126,7 +129,7 @@ if ($ARGV[0]) {
         if ($ARGV[1]) {
             if ($ARGV[1] eq "LOCAL") {
                 print "updating local bazinga structure ... ";
-#                update_bazinga($ARGV[1]);
+                update_bazinga($ARGV[1]);
                 print "DONE!\n";
             }
             elsif ($ARGV[1] eq "REMOTE") {
@@ -258,7 +261,8 @@ sub add_content {
     }
     if ($true) {
         open my $INDEXFD, ">> $CONF_HASH{'blog_directory'}/index" or die "$!";
-        print $INDEXFD "$random:$cont_hash_ref->{'type'}:$cont_hash_ref->{'tags'}:$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'}\n";
+        print $INDEXFD "$random:$cont_hash_ref->{'type'}:$cont_hash_ref->{'tags'}:" .
+                       "$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'} $cont_hash_ref->{'time'}\n";
         close $INDEXFD;
     }
 }
@@ -284,7 +288,9 @@ sub generate_html {
     $ref->{'text'} =~ s/\/((\s|\w)+)\//<i>$1<\/i>/g;
     $ref->{'text'} =~ s/\*((\s|\w)+)\*/<b>$1<\/b>/g;
     $ref->{'text'} =~ s/_((\s|\w)+)_/<u>$1<\/u>/g;
-    my $generated = <<"EOHTML";
+    my $generated;
+    if ($ref->{'type'} eq 'page') {
+        $generated = <<"EOHTML";
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
@@ -298,6 +304,30 @@ $ref->{'text'}
 </body>
 </html>
 EOHTML
+    }
+    elsif ($ref->{'type'} eq 'article') {
+        $generated = <<"EOHTML";
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>$ref->{'title'}</title>
+</head>
+<body>
+<h1>$ref->{'title'}</h1>
+$ref->{'text'}
+</body>
+</html>
+EOHTML
+    }
+    elsif ($ref->{'type'} eq 'comment') {
+        $generated = $ref->{'text'};
+    }
+    else {
+        print "content file is somehow invalid ... don't know what to do .. giving up.\n";
+        exit 23;
+    }
     return $generated;
 
 }
@@ -342,4 +372,36 @@ sub delete_content {
 
 sub replace_content {}
 sub check_content {}
-sub update_bazinga {}
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: update_bazinga
+# needs:    string "LOCAL" or "REMOTE"
+# returns:  nothing
+# calls:    nothing
+# purpose:  this is where it gets tricky .. we have to bring everything together now .. pheew
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub update_bazinga {
+    my $location = shift;
+    my %index_hash;
+    if ($location eq "LOCAL") {
+        open my $INDEXFD, "< $CONF_HASH{'blog_directory'}/index" or die "Couldn't open index file, exiting.\n";
+        while (<$INDEXFD>) {
+            if (m/^(.+?)\:(.+?)\:(.+?)\:(.+?)\:(.+?).*$/) {
+                $index_hash{$5}->{'title'} = $4;
+                $index_hash{$5}->{'datetime'} = $5;
+                $index_hash{$5}->{'tags'} = $3;
+                $index_hash{$5}->{'id'} = $1;
+            }
+        }
+        close $INDEXFD;
+        for (sort keys %index_hash) {
+            print $index_hash{$_}->{'title'}, "\n";
+        }
+    }
+    print Dumper(%index_hash);
+}
