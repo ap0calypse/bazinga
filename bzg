@@ -14,6 +14,26 @@ use v5.10;
 # version info, config locations, ...
 my $VERSION = "0.1a";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
+my %CONF_HASH;
+
+open my $CONFFD, "< $CONFIG" or die "can't access config, please check $CONFIG\n";
+while (<$CONFFD>) {
+    next if m/^#.*/;
+    next if m/^[[:space:]]+$/;
+    if (m/.*BLOG_DIRECTORY: *\"(.+)\".*/) {
+        $CONF_HASH{'blog_directory'} = $1;
+        mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'};
+        mkdir "$CONF_HASH{'blog_directory'}/pages" unless -e "$CONF_HASH{'blog_directory'}/pages";
+        mkdir "$CONF_HASH{'blog_directory'}/articles" unless -e "$CONF_HASH{'blog_directory'}/articles";
+        mkdir "$CONF_HASH{'blog_directory'}/comments" unless -e "$CONF_HASH{'blog_directory'}/comments";
+        mkdir "$CONF_HASH{'blog_directory'}/images" unless -e "$CONF_HASH{'blog_directory'}/images";
+    }
+    else {
+        print "Obviously, you didn't specify a BLOG_DIRECTORY in your $CONFIG\n";
+        exit 11;
+    }
+}
+close $CONFFD;
 
 
 # param check, we die if there is the wrong count
@@ -207,18 +227,39 @@ sub process_content {
 
 sub add_content {
     my $cont_hash_ref = shift;
+    my $true = 0;
     print "Adding content '" . $cont_hash_ref->{'title'} . "' to bazinga structure ...\n";
     
     my $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
     print "generated ID: $random\n";
     my $output = generate_html($cont_hash_ref);
-    open my $OUTFD, "> ./blog/$random.html" or die "$!";
-    print $OUTFD $output;
-    close $OUTFD;
-
-    open my $INDEXFD, ">> ./blog/index" or die "$!";
-    print $INDEXFD "$random:$cont_hash_ref->{'tags'}:$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'}\n";
-    close $INDEXFD;
+    if ($cont_hash_ref->{'title'} eq "article") {
+        open my $OUTFD, "> ./blog/articles/$random.html" or die "$!";
+        print $OUTFD $output;
+        close $OUTFD;
+        $true = 1;
+    }
+    elsif ($cont_hash_ref->{'title'} eq "page") {
+        open my $OUTFD, "> ./blog/pages/$random.html" or die "$!";
+        print $OUTFD $output;
+        close $OUTFD;
+        $true = 1;
+    }
+    elsif ($cont_hash_ref->{'title'} eq "comment") {
+        open my $OUTFD, "> ./blog/comments/$random.html" or die "$!";
+        print $OUTFD $output;
+        close $OUTFD;
+        $true = 1;
+    }
+    else {
+        print "content file invalid, missing title-argument.\n";
+        exit 8;
+    }
+    if ($true) {
+        open my $INDEXFD, ">> ./blog/index" or die "$!";
+        print $INDEXFD "$random:$cont_hash_ref->{'tags'}:$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'}\n";
+        close $INDEXFD;
+    }
 }
 
 

@@ -1,0 +1,6 @@
+# bazinga configuration file
+
+# directory where the local bazinga structure is created
+BLOG_DIRECTORY: "/tmp/blog"
+
+
