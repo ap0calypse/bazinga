@@ -22,71 +22,109 @@ die "configuration file $CONFIG doesn't exist or isn't readable, please check.\n
 
 
 # arg-list processing
-given ($ARGV[0]) {
-    when (/help?/) {
+if ($ARGV[0]) {
+    if ($ARGV[0] eq "help") {
         print_usage() and exit 0;
     }
-    when (/add?/) {
-        given ($ARGV[1]) {
-            when ($ARGV[1] ne "" && -e $ARGV[1]) {
+    elsif ($ARGV[0] eq "add") {
+        if ($ARGV[1]) {
+            if (-e $ARGV[1]) {
                 print "parsing file $ARGV[1] ... ";
                 process_content($ARGV[1]);
                 print "DONE!\n";
             }
-            default { print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; }
+            else {
+                print "$ARGV[1] is not a file, please specify a path to a valid content file.\n"; 
+            }
+        }
+        else {
+            print "You have to specify the path to a valid content file.\n";
+            exit 2;
         }
     }
-    when (/delete?/) {
-        given ($ARGV[1]) {
-            when ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
-                print "deleting article $ARGV[1] from articles ... ";
+    elsif ($ARGV[0] eq "delete") {
+        if ($ARGV[1]) {
+            if ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
+                print "deleting content $ARGV[1] from structure ... ";
                 delete_content($ARGV[1]);
                 print " DONE!\n";
             }
-            default { print "$ARGV[1] is not a valid id, please specify a correct id.\n"; }
+            else { 
+                print "$ARGV[1] is not a valid id, please specify a correct id.\n"; 
+            }
+        }
+        else {
+            print "You have to specify a valid content id.\n";
+            exit 3;
         }
     }
-    when (/replace?/) {
-        given ($ARGV[1]) {
-            when ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
-                given ($ARGV[2]) {
-                    when (-e $ARGV[2]) {
-                        print "replacing article $ARGV[1] with $ARGV[2] ... ";
+    elsif ($ARGV[0] eq "replace") {
+        if ($ARGV[1]) {
+            if ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
+                if ($ARGV[2]) {
+                    if (-e $ARGV[2]) {
+                        print "replacing content $ARGV[1] with $ARGV[2] ... ";
 #                        check_article($ARGV[1]);
                         print " DONE!\n";
                     }
-                    default { print "$ARGV[1] is not a file, please specify a path to the article file.\n"; }
+                    else { 
+                        print "$ARGV[1] is not a file, please specify a path to the content file.\n";
+                    }
+                }
+                else {
+                    print "You have to specify a valid content file\n";
+                    exit 4;
                 }
             }
-            default { print "$ARGV[1] is not a valid id, please specify a correct id.\n"; }
+            else { 
+                print "$ARGV[1] is not a valid id, please specify a correct id.\n"; 
+            }
+        }
+        else {
+            print "You have to specify the id you want to be replaced.\n";
+            exit 5;
         }
     }
-    when (/check?/) {
-        given ($ARGV[1]) {
-            when (-e $ARGV[1]) {
+    elsif ($ARGV[0] eq "check") {
+        if ($ARGV[1]) {
+            if (-e $ARGV[1]) {
                 print "checking article file $ARGV[1] for correctness ... ";
 #                check_article($ARGV[1]);
                 print "DONE!\n";
             }
-            default { print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; }
+            else { 
+                print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; 
+            }
+        }
+        else {
+            print "You have to specify the path to the content file which should be checked.\n";
+            exit 6;
         }
     }
-    when (/update?/) {
-        given ($ARGV[1]) {
-            when (/LOCAL?/) {
+    elsif ($ARGV[0] eq "update") {
+        if ($ARGV[1]) {
+            if ($ARGV[1] eq "LOCAL") {
                 print "updating local bazinga structure ... ";
 #                update_bazinga($ARGV[1]);
                 print "DONE!\n";
             }
-            when (/REMOTE?/) {
+            elsif ($ARGV[1] eq "REMOTE") {
                 print "updating remote bazinga structure ... ";
 #                update_bazinga($ARGV[1]);
                 print "DONE!\n";
             }
-            default { print "$ARGV[1] is not a valid identifier. Needs to be LOCAL or REMOTE.\n"; }
+            else { 
+                print "$ARGV[1] is not a valid identifier. Needs to be LOCAL or REMOTE.\n"; 
+            }
+        }
+        else {
+            print "You have to specify the structure that should be updated.\n";
+            exit 7;
         }
     }
-    default { print "You entered an unknown parameter, please check.\n"; }
+    else { 
+        print "You entered an unknown parameter, please check.\n"; 
+    }
 }
 
 
