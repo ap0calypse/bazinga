@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
+use CGI qw/:standard/;
 use Data::Dumper;
 use Env qw(HOME USERNAME);
 use v5.10;
@@ -233,30 +234,30 @@ sub add_content {
     my $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
     print "generated ID: $random\n";
     my $output = generate_html($cont_hash_ref);
-    if ($cont_hash_ref->{'title'} eq "article") {
-        open my $OUTFD, "> ./blog/articles/$random.html" or die "$!";
+    if ($cont_hash_ref->{'type'} eq "article") {
+        open my $OUTFD, "> $CONF_HASH{'blog_directory'}/articles/$random.html" or die "$!";
         print $OUTFD $output;
         close $OUTFD;
         $true = 1;
     }
-    elsif ($cont_hash_ref->{'title'} eq "page") {
-        open my $OUTFD, "> ./blog/pages/$random.html" or die "$!";
+    elsif ($cont_hash_ref->{'type'} eq "page") {
+        open my $OUTFD, "> $CONF_HASH{'blog_directory'}/pages/$random.html" or die "$!";
         print $OUTFD $output;
         close $OUTFD;
         $true = 1;
     }
-    elsif ($cont_hash_ref->{'title'} eq "comment") {
-        open my $OUTFD, "> ./blog/comments/$random.html" or die "$!";
+    elsif ($cont_hash_ref->{'type'} eq "comment") {
+        open my $OUTFD, "> $CONF_HASH{'blog_directory'}/comments/$random.html" or die "$!";
         print $OUTFD $output;
         close $OUTFD;
         $true = 1;
     }
     else {
-        print "content file invalid, missing title-argument.\n";
+        print "content file invalid, missing type-argument.\n";
         exit 8;
     }
     if ($true) {
-        open my $INDEXFD, ">> ./blog/index" or die "$!";
+        open my $INDEXFD, ">> $CONF_HASH{'blog_directory'}/index" or die "$!";
         print $INDEXFD "$random:$cont_hash_ref->{'tags'}:$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'}\n";
         close $INDEXFD;
     }
@@ -276,6 +277,7 @@ sub add_content {
 
 sub generate_html {
     my $ref = shift;
+    $ref->{'text'} = escapeHTML($ref->{'text'});
     $ref->{'text'} =~ s/\n/<br \/>\n/g;
     $ref->{'text'} =~ s/CODE_START/<div class=\'code\'>/g;
     $ref->{'text'} =~ s/CODE_END/<\/div>/g;
@@ -315,16 +317,16 @@ EOHTML
 sub delete_content {
     my $id = shift;
     my $temp;
-    open my $INDEXFD, "< ./blog/index" or die "$!";
+    open my $INDEXFD, "< $CONF_HASH{'blog_directory'}/index" or die "$!";
     while (<$INDEXFD>) {
         if (s/^$id.+$//gmx) {
             chomp;
         }
         $temp .= $_;
     }
-    unlink "./blog/$id.html";
+#    unlink "./$id.html";
     close $INDEXFD;
-    open my $INDEXWR, "> ./blog/index" or die "$!";
+    open my $INDEXWR, "> $CONF_HASH{'blog_directory'}/index" or die "$!";
     print $INDEXWR $temp;
     close $INDEXWR;
     
