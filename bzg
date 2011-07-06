@@ -258,7 +258,7 @@ sub add_content {
     }
     if ($true) {
         open my $INDEXFD, ">> $CONF_HASH{'blog_directory'}/index" or die "$!";
-        print $INDEXFD "$random:$cont_hash_ref->{'tags'}:$cont_hash_ref->{'type'}:$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'}\n";
+        print $INDEXFD "$random:$cont_hash_ref->{'type'}:$cont_hash_ref->{'tags'}:$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'}\n";
         close $INDEXFD;
     }
 }
@@ -319,7 +319,7 @@ sub delete_content {
     my ($temp, $type);
     open my $INDEXFD, "< $CONF_HASH{'blog_directory'}/index" or die "$!";
     while (<$INDEXFD>) {
-        if (s/^$id\:(.+)\:.+$//gmx) {
+        if (s/^$id\:(.+?)\:.+$//gmx) {
             chomp;
             $type = $1;
         }
