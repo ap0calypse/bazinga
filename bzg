@@ -13,18 +13,33 @@ use v5.10;
 # license:      
 
 
+################################################################################
 # version info, config locations, ...
+################################################################################
+
 my $VERSION = "0.1a";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
 my %CONF_HASH;
 my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
+
+
+################################################################################
+# BZG_HASH is the mega-hash containing all the information.
+# if the file is too small (<5b) we can surely asume it doesn't exist,
+# otherwise we read in the hash from the file
+################################################################################
+
 my $BZG_HASH;
-if ((stat $BZG_FILE)[7] > 20) {
+if ((stat $BZG_FILE)[7] > 5) {
     $BZG_HASH = retrieve $BZG_FILE;
 }
 
 
+################################################################################
+# here we parse the config file in the users home directory and fill %CONF_HASH
+# with all the information.
+################################################################################
 
 open my $CONFFD, "< $CONFIG" or die "can't access config, please check $CONFIG\n";
 while (<$CONFFD>) {
@@ -33,9 +48,9 @@ while (<$CONFFD>) {
     if (m/.*BLOG_DIRECTORY: *\"(.+)\".*/) {
         $CONF_HASH{'blog_directory'} = $1;
         mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'};
-        mkdir "$CONF_HASH{'blog_directory'}/pages" unless -e "$CONF_HASH{'blog_directory'}/pages";
-        mkdir "$CONF_HASH{'blog_directory'}/articles" unless -e "$CONF_HASH{'blog_directory'}/articles";
-        mkdir "$CONF_HASH{'blog_directory'}/comments" unless -e "$CONF_HASH{'blog_directory'}/comments";
+        mkdir "$CONF_HASH{'blog_directory'}/page" unless -e "$CONF_HASH{'blog_directory'}/page";
+        mkdir "$CONF_HASH{'blog_directory'}/article" unless -e "$CONF_HASH{'blog_directory'}/article";
+        mkdir "$CONF_HASH{'blog_directory'}/comment" unless -e "$CONF_HASH{'blog_directory'}/comment";
     }
     else {
         print "Obviously, you didn't specify a BLOG_DIRECTORY in your $CONFIG\n";
@@ -45,12 +60,19 @@ while (<$CONFFD>) {
 close $CONFFD;
 
 
+################################################################################
 # param check, we die if there is the wrong count
+################################################################################
+
 die "not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
 die "configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
 print "you have no custom $CSS, that's ok if you want standard layout.\n" unless (-e $CSS);
 
+
+################################################################################
 # arg-list processing
+################################################################################
+
 if ($ARGV[0]) {
     if ($ARGV[0] eq "help") {
         print_usage() and exit 0;
@@ -58,9 +80,7 @@ if ($ARGV[0]) {
     elsif ($ARGV[0] eq "add") {
         if ($ARGV[1]) {
             if (-e $ARGV[1]) {
-                print "parsing file $ARGV[1] ... ";
                 add_content($ARGV[1]);
-                print "DONE!\n";
             }
             else {
                 print "$ARGV[1] is not a file, please specify a path to a valid content file.\n"; 
@@ -74,9 +94,7 @@ if ($ARGV[0]) {
     elsif ($ARGV[0] eq "delete") {
         if ($ARGV[1]) {
             if ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
-                print "deleting content $ARGV[1] from structure ... ";
                 delete_content($ARGV[1]);
-                print " DONE!\n";
             }
             else { 
                 print "$ARGV[1] is not a valid id, please specify a correct id.\n"; 
@@ -207,20 +225,38 @@ sub print_usage {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub add_content {
+    my %needed_params = (
+        'article'   => [qw(author title email website text date time tags)],
+        'page'      => [qw(author title email website text date time)],
+        'comment'   => [qw(author email website text date time to_article)],
+    );
     my $content_file = shift;
     my $type;
     my $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
     open my $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
     while (<$CONTFD>) {
-        $BZG_HASH->{$1}{$random} = {} and $type = $1 and next if m/^type: *\"(article|comment|page){1}\".*$/;
+        $BZG_HASH->{$1}{$random} = {} and $type = $1 and last if m/^type: *\"(article|comment|page){1}\".*$/;
+    }
+    close $CONTFD;
+    unless ($type) {
+        print "Content file is missing the 'type' param, please check and re-run.\n";
+        exit;
+    }
+    open $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
+    while (<$CONTFD>) {
         $BZG_HASH->{$type}{$random}{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
         if (/START_TEXT/ .. /END_TEXT/) {
             $BZG_HASH->{$type}{$random}{'text'} .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
         }
     }
     close $CONTFD;
+    for my $list_item (@{$needed_params{$type}}) {
+        unless ( grep {/$list_item/} keys $BZG_HASH->{$type}{$random}) {
+            print "argument '$list_item' is missing in content-file, exiting.\n";
+            exit;
+        }
+    }
     store $BZG_HASH, $BZG_FILE;
-    print Dumper($BZG_HASH);
 }
 
 
@@ -236,25 +272,36 @@ sub add_content {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub delete_content {
-    my $id = shift;
-    my ($temp, $type);
-    open my $INDEXFD, "< $CONF_HASH{'blog_directory'}/index" or die "$!";
-    while (<$INDEXFD>) {
-        if (s/^$id\:(.+?)\:.+$//gmx) {
-            chomp;
-            $type = $1;
+    my $delete_id = shift;
+    my $key;
+    if (exists $BZG_HASH->{'page'}) {
+        for $key (keys $BZG_HASH->{'page'}) {
+            if ($key eq $delete_id) {
+                delete $BZG_HASH->{'page'}{$key};
+                print "deleted page '$key'\n";
+            }
         }
-        $temp .= $_;
     }
-    
-    unlink "$CONF_HASH{'blog_directory'}/articles/$id.html" if $type eq "article";
-    unlink "$CONF_HASH{'blog_directory'}/pages/$id.html" if $type eq "page";
-    unlink "$CONF_HASH{'blog_directory'}/comments/$id.html" if $type eq "comment";
-    close $INDEXFD;
-    open my $INDEXWR, "> $CONF_HASH{'blog_directory'}/index" or die "$!";
-    print $INDEXWR $temp;
-    close $INDEXWR;
-    
+    elsif (exists $BZG_HASH->{'article'}) {
+        for $key (keys $BZG_HASH->{'article'}) {
+            if ($key eq $delete_id) {
+                delete $BZG_HASH->{'article'}{$key};
+                print "deleted article '$key'\n";
+            }
+        }
+    }
+    elsif (exists $BZG_HASH->{'comment'}) {
+        for $key (keys $BZG_HASH->{'comment'}) {
+            if ($key eq $delete_id) {
+                delete $BZG_HASH->{'comment'}{$key};
+                print "deleted comment '$key'\n";
+            }
+        }
+    }
+    else {
+        print "Your structure seems to be empty ... exiting\n";
+    }
+    store $BZG_HASH, $BZG_FILE;
 }
 
 
@@ -263,36 +310,7 @@ sub delete_content {
 
 sub replace_content {}
 sub check_content {}
+sub update_bazinga {}
 
 
-
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# function: update_bazinga
-# needs:    string "LOCAL" or "REMOTE"
-# returns:  nothing
-# calls:    nothing
-# purpose:  this is where it gets tricky .. we have to bring everything together now .. pheew
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-sub update_bazinga {
-    my $location = shift;
-    my %index_hash;
-    if ($location eq "LOCAL") {
-        open my $INDEXFD, "< $CONF_HASH{'blog_directory'}/index" or die "Couldn't open index file, exiting.\n";
-        while (<$INDEXFD>) {
-            if (m/^(.+?)\:(.+?)\:(.+?)\:(.+?)\:(.+?).*$/) {
-                $index_hash{$5}->{'title'} = $4;
-                $index_hash{$5}->{'datetime'} = $5;
-                $index_hash{$5}->{'tags'} = $3;
-                $index_hash{$5}->{'id'} = $1;
-            }
-        }
-        close $INDEXFD;
-        for (sort keys %index_hash) {
-            print $index_hash{$_}->{'title'}, "\n";
-        }
-    }
-    print Dumper(%index_hash);
-}
+print Dumper($BZG_HASH);
