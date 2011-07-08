@@ -19,7 +19,10 @@ my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
 my %CONF_HASH;
 my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
-my $BZG_HASH = retrieve $BZG_FILE if retrieve $BZG_FILE;
+my $BZG_HASH;
+if ((stat $BZG_FILE)[7] > 20) {
+    $BZG_HASH = retrieve $BZG_FILE;
+}
 
 
 
