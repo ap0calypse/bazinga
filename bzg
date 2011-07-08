@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use CGI qw/:standard/;
 use Data::Dumper;
+use Storable;
 use Env qw(HOME USERNAME);
 use v5.10;
 
@@ -17,6 +18,8 @@ my $VERSION = "0.1a";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
 my %CONF_HASH;
+my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
+my $BZG_HASH = retrieve $BZG_FILE if retrieve $BZG_FILE;
 
 
 
@@ -30,7 +33,6 @@ while (<$CONFFD>) {
         mkdir "$CONF_HASH{'blog_directory'}/pages" unless -e "$CONF_HASH{'blog_directory'}/pages";
         mkdir "$CONF_HASH{'blog_directory'}/articles" unless -e "$CONF_HASH{'blog_directory'}/articles";
         mkdir "$CONF_HASH{'blog_directory'}/comments" unless -e "$CONF_HASH{'blog_directory'}/comments";
-        mkdir "$CONF_HASH{'blog_directory'}/images" unless -e "$CONF_HASH{'blog_directory'}/images";
     }
     else {
         print "Obviously, you didn't specify a BLOG_DIRECTORY in your $CONFIG\n";
@@ -54,7 +56,7 @@ if ($ARGV[0]) {
         if ($ARGV[1]) {
             if (-e $ARGV[1]) {
                 print "parsing file $ARGV[1] ... ";
-                process_content($ARGV[1]);
+                add_content($ARGV[1]);
                 print "DONE!\n";
             }
             else {
@@ -174,7 +176,7 @@ sub print_usage {
         bzg delete ID
         bzg replace ID FILE
         bzg check FILE
-        bzg update LOCAL | REMOTE
+        bzg update 
 
     examples:
 
@@ -183,8 +185,7 @@ sub print_usage {
         bzg add comment_from_some_dude.txt
         bzg replace 6783423 corrected_article.txt
         bzg check maybe_corrupt_article.txt
-        bzg update LOCAL
-        bzg update REMOTE
+        bzg update
 
 );
 }
@@ -194,142 +195,28 @@ sub print_usage {
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# function: process_content
+# function: add_content
 # needs:    path to content file
 # returns:  nothing
-# calls:    add_content
-# purpose:  processes the content file and fills a hash with the content information
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-sub process_content {
-    my $content_file = shift;
-    my %cont_hash;
-    open my $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
-    while (<$CONTFD>) {
-        $cont_hash{'type'} = $1 and next if m/^type: *\"(article|comment|page){1}\".*$/;
-        $cont_hash{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
-        if (/START_TEXT/ .. /END_TEXT/) {
-            $cont_hash{'text'} .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
-        }
-    }
-    close $CONTFD;
-# here we need to add some error correction in case there is something missing in %art_hash ...
-    add_content(\%cont_hash);
-}
-
-
-
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# function: add_content
-# needs:    reference to the content-hash
-# returns:  nothing
-# calls:    generate_html
-# purpose:  processes the content hash and writes out the html-document to blog structure / index
+# calls:    nothing
+# purpose:  processes the content file and fills the super hash with the content information
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub add_content {
-    my $cont_hash_ref = shift;
-    my $true = 0;
-    print "Adding content '" . $cont_hash_ref->{'title'} . "' to bazinga structure ...\n";
-    
+    my $content_file = shift;
+    my $type;
     my $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
-    print "generated ID: $random\n";
-    my $output = generate_html($cont_hash_ref);
-    if ($cont_hash_ref->{'type'} eq "article") {
-        open my $OUTFD, "> $CONF_HASH{'blog_directory'}/articles/$random.html" or die "$!";
-        print $OUTFD $output;
-        close $OUTFD;
-        $true = 1;
+    open my $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
+    while (<$CONTFD>) {
+        $BZG_HASH->{$1}{$random} = {} and $type = $1 and next if m/^type: *\"(article|comment|page){1}\".*$/;
+        $BZG_HASH->{$type}{$random}{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
+        if (/START_TEXT/ .. /END_TEXT/) {
+            $BZG_HASH->{$type}{$random}{'text'} .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
+        }
     }
-    elsif ($cont_hash_ref->{'type'} eq "page") {
-        open my $OUTFD, "> $CONF_HASH{'blog_directory'}/pages/$random.html" or die "$!";
-        print $OUTFD $output;
-        close $OUTFD;
-        $true = 1;
-    }
-    elsif ($cont_hash_ref->{'type'} eq "comment") {
-        open my $OUTFD, "> $CONF_HASH{'blog_directory'}/comments/$random.html" or die "$!";
-        print $OUTFD $output;
-        close $OUTFD;
-        $true = 1;
-    }
-    else {
-        print "content file invalid, missing type-argument.\n";
-        exit 8;
-    }
-    if ($true) {
-        open my $INDEXFD, ">> $CONF_HASH{'blog_directory'}/index" or die "$!";
-        print $INDEXFD "$random:$cont_hash_ref->{'type'}:$cont_hash_ref->{'tags'}:" .
-                       "$cont_hash_ref->{'title'}:$cont_hash_ref->{'date'} $cont_hash_ref->{'time'}\n";
-        close $INDEXFD;
-    }
-}
-
-
-
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# function: generate_html
-# needs:    reference to content hash
-# returns:  html-ified version of the text
-# calls:    nothing
-# purpose:  translates the content jargon to clean html
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-sub generate_html {
-    my $ref = shift;
-    $ref->{'text'} = escapeHTML($ref->{'text'});
-    $ref->{'text'} =~ s/\n/<br \/>\n/g;
-    $ref->{'text'} =~ s/CODE_START/<div class=\'code\'>/g;
-    $ref->{'text'} =~ s/CODE_END/<\/div>/g;
-    $ref->{'text'} =~ s/\/((\s|\w)+)\//<i>$1<\/i>/g;
-    $ref->{'text'} =~ s/\*((\s|\w)+)\*/<b>$1<\/b>/g;
-    $ref->{'text'} =~ s/_((\s|\w)+)_/<u>$1<\/u>/g;
-    my $generated;
-    if ($ref->{'type'} eq 'page') {
-        $generated = <<"EOHTML";
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>$ref->{'title'}</title>
-</head>
-<body>
-<h1>$ref->{'title'}</h1>
-$ref->{'text'}
-</body>
-</html>
-EOHTML
-    }
-    elsif ($ref->{'type'} eq 'article') {
-        $generated = <<"EOHTML";
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>$ref->{'title'}</title>
-</head>
-<body>
-<h1>$ref->{'title'}</h1>
-$ref->{'text'}
-</body>
-</html>
-EOHTML
-    }
-    elsif ($ref->{'type'} eq 'comment') {
-        $generated = $ref->{'text'};
-    }
-    else {
-        print "content file is somehow invalid ... don't know what to do .. giving up.\n";
-        exit 23;
-    }
-    return $generated;
-
+    close $CONTFD;
+    store $BZG_HASH, $BZG_FILE;
+    print Dumper($BZG_HASH);
 }
 
 
