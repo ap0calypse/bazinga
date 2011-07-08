@@ -179,6 +179,7 @@ sub print_usage {
         bzg delete ID
         bzg replace ID FILE
         bzg check FILE
+        bzg list
         bzg update 
 
     examples:
