@@ -227,18 +227,27 @@ sub print_usage {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub list_contents {
-    print "Articles:\n";
+    print "Articles:\n" . "* " x 20 . "\n\n";
     for (keys %{$BZG_HASH->{'article'}}) {
-        print "article: $_ ($BZG_HASH->{'article'}{$_}{'title'})\n";
+        print " $_ ($BZG_HASH->{'article'}{$_}{'title'})";
+        print " from: $BZG_HASH->{'article'}{$_}{'author'} - $BZG_HASH->{'article'}{$_}{'date'}";
+        print " $BZG_HASH->{'article'}{$_}{'time'}\n";
     }
-    print "Pages:\n";
+    print "\n\n";
+    print "Pages:\n" . "* " x 20 . "\n";
     for (keys %{$BZG_HASH->{'page'}}) {
-        print "page: $_ ($BZG_HASH->{'page'}{$_}{'title'})\n";
+        print " $_ ($BZG_HASH->{'page'}{$_}{'title'})";
+        print " from: $BZG_HASH->{'page'}{$_}{'author'} - $BZG_HASH->{'page'}{$_}{'date'}";
+        print " $BZG_HASH->{'page'}{$_}{'time'}\n";
     }
-    print "Comments:\n";
+    print "\n\n";
+    print "Comments:\n" . "* " x 20 . "\n";
     for (keys %{$BZG_HASH->{'comment'}}) {
-        print "comment: $_ ($BZG_HASH->{'comment'}{$_}{'to_article'})\n";
+        print " $_ (-> $BZG_HASH->{'comment'}{$_}{'to_article'})";
+        print " from: $BZG_HASH->{'comment'}{$_}{'author'} - $BZG_HASH->{'comment'}{$_}{'date'}";
+        print " $BZG_HASH->{'comment'}{$_}{'time'}\n";
     }
+    print "\n\n";
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
