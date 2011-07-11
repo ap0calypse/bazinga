@@ -77,6 +77,9 @@ if ($ARGV[0]) {
     if ($ARGV[0] eq "help") {
         print_usage() and exit 0;
     }
+    elsif ($ARGV[0] eq "list") {
+        list_contents() and exit 0;
+    }
     elsif ($ARGV[0] eq "add") {
         if ($ARGV[1]) {
             if (-e $ARGV[1]) {
@@ -111,7 +114,7 @@ if ($ARGV[0]) {
                 if ($ARGV[2]) {
                     if (-e $ARGV[2]) {
                         print "replacing content $ARGV[1] with $ARGV[2] ... ";
-#                        check_article($ARGV[1]);
+                        replace_content($ARGV[1], $ARGV[2]);
                         print " DONE!\n";
                     }
                     else { 
@@ -215,10 +218,32 @@ sub print_usage {
 
 
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: list_contents
+# needs:    nothing
+# returns:  nothing
+# calls:    nothing
+# purpose:  displays a list of all the contents
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub list_contents {
+    print "Articles:\n";
+    for (keys %{$BZG_HASH->{'article'}}) {
+        print "article: $_ ($BZG_HASH->{'article'}{$_}{'title'})\n";
+    }
+    print "Pages:\n";
+    for (keys %{$BZG_HASH->{'page'}}) {
+        print "page: $_ ($BZG_HASH->{'page'}{$_}{'title'})\n";
+    }
+    print "Comments:\n";
+    for (keys %{$BZG_HASH->{'comment'}}) {
+        print "comment: $_ ($BZG_HASH->{'comment'}{$_}{'to_article'})\n";
+    }
+}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: add_content
-# needs:    path to content file
+# needs:    path to content file, (maybe ID, only if called from replace_content
 # returns:  nothing
 # calls:    nothing
 # purpose:  processes the content file and fills the super hash with the content information
@@ -231,8 +256,14 @@ sub add_content {
         'comment'   => [qw(author email website text date time to_article)],
     );
     my $content_file = shift;
-    my $type;
-    my $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
+    my $given_id = shift;
+    my ($type, $random);
+    if ($given_id) {
+        $random = $given_id;
+    }
+    else {
+        $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
+    }
     open my $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
     while (<$CONTFD>) {
         $BZG_HASH->{$1}{$random} = {} and $type = $1 and last if m/^type: *\"(article|comment|page){1}\".*$/;
@@ -308,9 +339,19 @@ sub delete_content {
 
 
 
-sub replace_content {}
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: replace_content
+# needs:    valid id from a page / article / comment, and path to a new content file
+# returns:  nothing
+# calls:    add_content, delete_content
+# purpose:  deletes any content and the corresponding id from the index and adds a new one
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub replace_content {
+    my ($id, $path) = @_;
+    delete_content($id);
+    add_content($path, $id);
+}
+
 sub check_content {}
 sub update_bazinga {}
-
-
-print Dumper($BZG_HASH);
