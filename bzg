@@ -47,10 +47,10 @@ while (<$CONFFD>) {
     next if m/^[[:space:]]+$/;
     if (m/.*BLOG_DIRECTORY: *\"(.+)\".*/) {
         $CONF_HASH{'blog_directory'} = $1;
-        mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'} or die "$!";
-        mkdir "$CONF_HASH{'blog_directory'}/page" unless -e "$CONF_HASH{'blog_directory'}/page" or die "$!";
-        mkdir "$CONF_HASH{'blog_directory'}/article" unless -e "$CONF_HASH{'blog_directory'}/article" or die "$!";
-        mkdir "$CONF_HASH{'blog_directory'}/comment" unless -e "$CONF_HASH{'blog_directory'}/comment" or die "$!";
+        mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'};
+        mkdir "$CONF_HASH{'blog_directory'}/page" unless -e "$CONF_HASH{'blog_directory'}/page";
+        mkdir "$CONF_HASH{'blog_directory'}/article" unless -e "$CONF_HASH{'blog_directory'}/article";
+        mkdir "$CONF_HASH{'blog_directory'}/comment" unless -e "$CONF_HASH{'blog_directory'}/comment";
     }
     else {
         print "Obviously, you didn't specify a BLOG_DIRECTORY in your $CONFIG\n";
@@ -251,7 +251,7 @@ sub add_content {
     }
     close $CONTFD;
     for my $list_item (@{$needed_params{$type}}) {
-        unless ( grep {/$list_item/} keys $BZG_HASH->{$type}{$random}) {
+        unless ( grep {/$list_item/} keys %{$BZG_HASH->{$type}{$random}}) {
             print "argument '$list_item' is missing in content-file, exiting.\n";
             exit;
         }
@@ -275,7 +275,7 @@ sub delete_content {
     my $delete_id = shift;
     my $key;
     if (exists $BZG_HASH->{'page'}) {
-        for $key (keys $BZG_HASH->{'page'}) {
+        for $key (keys %{$BZG_HASH->{'page'}}) {
             if ($key eq $delete_id) {
                 delete $BZG_HASH->{'page'}{$key};
                 print "deleted page '$key'\n";
@@ -283,7 +283,7 @@ sub delete_content {
         }
     }
     elsif (exists $BZG_HASH->{'article'}) {
-        for $key (keys $BZG_HASH->{'article'}) {
+        for $key (keys %{$BZG_HASH->{'article'}}) {
             if ($key eq $delete_id) {
                 delete $BZG_HASH->{'article'}{$key};
                 print "deleted article '$key'\n";
@@ -291,7 +291,7 @@ sub delete_content {
         }
     }
     elsif (exists $BZG_HASH->{'comment'}) {
-        for $key (keys $BZG_HASH->{'comment'}) {
+        for $key (keys %{$BZG_HASH->{'comment'}}) {
             if ($key eq $delete_id) {
                 delete $BZG_HASH->{'comment'}{$key};
                 print "deleted comment '$key'\n";
