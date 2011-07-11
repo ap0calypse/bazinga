@@ -47,10 +47,10 @@ while (<$CONFFD>) {
     next if m/^[[:space:]]+$/;
     if (m/.*BLOG_DIRECTORY: *\"(.+)\".*/) {
         $CONF_HASH{'blog_directory'} = $1;
-        mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'};
-        mkdir "$CONF_HASH{'blog_directory'}/page" unless -e "$CONF_HASH{'blog_directory'}/page";
-        mkdir "$CONF_HASH{'blog_directory'}/article" unless -e "$CONF_HASH{'blog_directory'}/article";
-        mkdir "$CONF_HASH{'blog_directory'}/comment" unless -e "$CONF_HASH{'blog_directory'}/comment";
+        mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'} or die "$!";
+        mkdir "$CONF_HASH{'blog_directory'}/page" unless -e "$CONF_HASH{'blog_directory'}/page" or die "$!";
+        mkdir "$CONF_HASH{'blog_directory'}/article" unless -e "$CONF_HASH{'blog_directory'}/article" or die "$!";
+        mkdir "$CONF_HASH{'blog_directory'}/comment" unless -e "$CONF_HASH{'blog_directory'}/comment" or die "$!";
     }
     else {
         print "Obviously, you didn't specify a BLOG_DIRECTORY in your $CONFIG\n";
