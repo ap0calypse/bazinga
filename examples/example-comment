@@ -1,11 +1,11 @@
-type: "comment"
+category: "comments"
 author: "Jim Beam"
 website: "http://example.org"
 email: "jim@beam.org"
 title: "comment on your article"
 date: "2011-07-02"
 time: "12:00"
-to_article: "6ef5245c01e1c4ee"
+to_article: "36b46ba830589b47"
 
 START_TEXT
 

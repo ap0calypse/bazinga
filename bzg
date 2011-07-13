@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use CGI qw/:standard/;
 use Data::Dumper;
+use File::Copy;
 use Storable;
 use Env qw(HOME USERNAME);
 use v5.10;
@@ -29,9 +29,9 @@ my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
 ################################################################################
 
 my %needed_params = (
-    'article'   => [qw(author title email website text date time tags)],
-    'page'      => [qw(author title email website text date time)],
-    'comment'   => [qw(author email website text date time to_article)],
+    'articles'   => [qw(author title email website text date time tags)],
+    'pages'      => [qw(author title email website text date time)],
+    'comments'   => [qw(author email website text date time to_article)],
 );
 
 
@@ -58,11 +58,17 @@ while (<$CONFFD>) {
     next if m/^[[:space:]]+$/;
     if (m/.*BLOG_DIRECTORY: *\"(.+)\".*/) {
         $CONF_HASH{'blog_directory'} = $1;
-        print "Your config doesn't contain a valid 'BLOG_DIRECTORY'\n" and exit unless $CONF_HASH{'blog_directory'};
         mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'};
-        mkdir "$CONF_HASH{'blog_directory'}/page" unless -e "$CONF_HASH{'blog_directory'}/page";
-        mkdir "$CONF_HASH{'blog_directory'}/article" unless -e "$CONF_HASH{'blog_directory'}/article";
-        mkdir "$CONF_HASH{'blog_directory'}/comment" unless -e "$CONF_HASH{'blog_directory'}/comment";
+        mkdir "$CONF_HASH{'blog_directory'}/pages" unless -e "$CONF_HASH{'blog_directory'}/pages";
+        mkdir "$CONF_HASH{'blog_directory'}/articles" unless -e "$CONF_HASH{'blog_directory'}/articles";
+        mkdir "$CONF_HASH{'blog_directory'}/comments" unless -e "$CONF_HASH{'blog_directory'}/comments";
+        mkdir "$CONF_HASH{'blog_directory'}/css" unless -e "$CONF_HASH{'blog_directory'}/css";
+    }
+    if (m/.*BLOG_TITLE: *\"(.+)\".*/) {
+        $CONF_HASH{'blog_title'} = $1;
+    }
+    if (m/.*BLOG_SUBTITLE: *\"(.+)\".*/) {
+        $CONF_HASH{'blog_subtitle'} = $1;
     }
 }
 close $CONFFD;
@@ -213,24 +219,24 @@ sub print_usage {
 
 sub list_contents {
     print "Articles:\n" . "* " x 20 . "\n\n";
-    for (keys %{$BZG_HASH->{'article'}}) {
-        print " $_ ($BZG_HASH->{'article'}{$_}{'title'})";
-        print " from: $BZG_HASH->{'article'}{$_}{'author'} - $BZG_HASH->{'article'}{$_}{'date'}";
-        print " $BZG_HASH->{'article'}{$_}{'time'}\n";
+    for (keys %{$BZG_HASH->{'articles'}}) {
+        print " $_ ($BZG_HASH->{'articles'}{$_}{'title'})";
+        print " from: $BZG_HASH->{'articles'}{$_}{'author'} - $BZG_HASH->{'articles'}{$_}{'date'}";
+        print " $BZG_HASH->{'articles'}{$_}{'time'}\n";
     }
     print "\n\n";
     print "Pages:\n" . "* " x 20 . "\n";
-    for (keys %{$BZG_HASH->{'page'}}) {
-        print " $_ ($BZG_HASH->{'page'}{$_}{'title'})";
-        print " from: $BZG_HASH->{'page'}{$_}{'author'} - $BZG_HASH->{'page'}{$_}{'date'}";
-        print " $BZG_HASH->{'page'}{$_}{'time'}\n";
+    for (keys %{$BZG_HASH->{'pages'}}) {
+        print " $_ ($BZG_HASH->{'pages'}{$_}{'title'})";
+        print " from: $BZG_HASH->{'pages'}{$_}{'author'} - $BZG_HASH->{'pages'}{$_}{'date'}";
+        print " $BZG_HASH->{'pages'}{$_}{'time'}\n";
     }
     print "\n\n";
     print "Comments:\n" . "* " x 20 . "\n";
-    for (keys %{$BZG_HASH->{'comment'}}) {
-        print " $_ (-> $BZG_HASH->{'comment'}{$_}{'to_article'})";
-        print " from: $BZG_HASH->{'comment'}{$_}{'author'} - $BZG_HASH->{'comment'}{$_}{'date'}";
-        print " $BZG_HASH->{'comment'}{$_}{'time'}\n";
+    for (keys %{$BZG_HASH->{'comments'}}) {
+        print " $_ (-> $BZG_HASH->{'comments'}{$_}{'to_article'})";
+        print " from: $BZG_HASH->{'comments'}{$_}{'author'} - $BZG_HASH->{'comments'}{$_}{'date'}";
+        print " $BZG_HASH->{'comments'}{$_}{'time'}\n";
     }
     print "\n\n";
 }
@@ -256,11 +262,11 @@ sub add_content {
     }
     open my $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
     while (<$CONTFD>) {
-        $BZG_HASH->{$1}{$random} = {} and $type = $1 and last if m/^type: *\"(article|comment|page){1}\".*$/;
+        $BZG_HASH->{$1}{$random} = {} and $type = $1 and last if m/^category: *\"(articles|comments|pages){1}\".*$/;
     }
     close $CONTFD;
     unless ($type) {
-        print "Content file is missing the 'type' param, please check and re-run.\n";
+        print "Content file is missing the 'category' param, please check and re-run.\n";
         exit;
     }
     open $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
@@ -278,6 +284,9 @@ sub add_content {
             $correct = 0;
         }
     }
+    if ($type eq 'comments') {
+        $correct = 0 unless exists $BZG_HASH->{'articles'}{$BZG_HASH->{$type}{$random}{'to_article'}};
+    }
     if ($correct) {
         print "content file seems to be correct.\n";
     }
@@ -287,7 +296,7 @@ sub add_content {
     }
     if ($add) {
         store $BZG_HASH, $BZG_FILE;
-        print "added article '$random'\n";
+        print "added '$random' to $type.\n";
     }
 }
 
@@ -304,32 +313,29 @@ sub add_content {
 sub delete_content {
     my $delete_id = shift;
     my $key;
-    if (exists $BZG_HASH->{'page'}) {
-        for $key (keys %{$BZG_HASH->{'page'}}) {
+    if (exists $BZG_HASH->{'pages'}) {
+        for $key (keys %{$BZG_HASH->{'pages'}}) {
             if ($key eq $delete_id) {
-                delete $BZG_HASH->{'page'}{$key};
+                delete $BZG_HASH->{'pages'}{$key};
                 print "deleted page '$key'\n";
             }
         }
     }
-    elsif (exists $BZG_HASH->{'article'}) {
-        for $key (keys %{$BZG_HASH->{'article'}}) {
+    if (exists $BZG_HASH->{'articles'}) {
+        for $key (keys %{$BZG_HASH->{'articles'}}) {
             if ($key eq $delete_id) {
-                delete $BZG_HASH->{'article'}{$key};
+                delete $BZG_HASH->{'articles'}{$key};
                 print "deleted article '$key'\n";
             }
         }
     }
-    elsif (exists $BZG_HASH->{'comment'}) {
-        for $key (keys %{$BZG_HASH->{'comment'}}) {
+    if (exists $BZG_HASH->{'comments'}) {
+        for $key (keys %{$BZG_HASH->{'comments'}}) {
             if ($key eq $delete_id) {
-                delete $BZG_HASH->{'comment'}{$key};
+                delete $BZG_HASH->{'comments'}{$key};
                 print "deleted comment '$key'\n";
             }
         }
-    }
-    else {
-        print "Your structure seems to be empty ... exiting\n";
     }
     store $BZG_HASH, $BZG_FILE;
 }
@@ -352,10 +358,11 @@ sub replace_content {
     add_content(1, $path, $id);
 }
 sub update_bazinga {
+    if (-e $CSS) {
+        copy($CSS, "$CONF_HASH{'blog_directory'}/css/style.css") or die "copy of css failed: $!\n";
+    }
     for my $section (keys %{$BZG_HASH}) {
-    print "searching through section '$section' ...\n";
         for (keys %{$BZG_HASH->{$section}}) { 
-            print $_, "\n";
             generate_file($section, $_);
         }
     }
@@ -366,4 +373,33 @@ sub generate_file {
     my ($type, $id) = @_;
 }
 
-sub generate_index {}
+sub generate_index {
+    my $templatefile = "./templates/index.template";
+    my $indexfile = $CONF_HASH{'blog_directory'} . "/index.html";
+    open my $TEMPLATE, "< $templatefile" or die "$!";
+    open my $INDEX, "> $indexfile" or die "$!";
+    while (my $line = <$TEMPLATE>) {
+        if ($line =~ m/\[BLOG_TITLE\]/gmx) {
+            $line =~ s/\[BLOG_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
+        }
+        if ($line =~ m/\[BLOG_SUBTITLE\]/gmx) {
+            $line =~ s/\[BLOG_SUBTITLE\]/$CONF_HASH{'blog_subtitle'}/gmx;
+        }
+        if ($line =~ m/\[STYLESHEET_LOCATION\]/gmx) {
+            $line =~ s/\[STYLESHEET_LOCATION\]/\.\/css\/style.css/gmx;
+        }
+        if ($line =~ m/\[MENU\]/gmx) {
+            $line =~ s/\[MENU\]//gmx;
+            $line = "<ul>\n";
+            for (sort keys %{$BZG_HASH}) {
+                $line .= "<li>$_</li>\n";
+            }
+            $line .= "</ul>\n";
+        }
+
+        print $INDEX $line;
+    }
+    close $TEMPLATE;
+    close $INDEX;
+}
+
