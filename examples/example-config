@@ -3,4 +3,13 @@
 # directory where the local bazinga structure is created
 BLOG_DIRECTORY: "/tmp/blog"
 
+# blog title
+BLOG_TITLE: "/home/ap0calypse"
 
+# blog subtitle
+BLOG_SUBTITLE: "yet another blog"
+
+# blog look and feel
+# 1: menu left, body middle
+# 2: menu right, body middle
+BLOG_DESIGN: "1"

@@ -58,14 +58,11 @@ while (<$CONFFD>) {
     next if m/^[[:space:]]+$/;
     if (m/.*BLOG_DIRECTORY: *\"(.+)\".*/) {
         $CONF_HASH{'blog_directory'} = $1;
+        print "Your config doesn't contain a valid 'BLOG_DIRECTORY'\n" and exit unless $CONF_HASH{'blog_directory'};
         mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'};
         mkdir "$CONF_HASH{'blog_directory'}/page" unless -e "$CONF_HASH{'blog_directory'}/page";
         mkdir "$CONF_HASH{'blog_directory'}/article" unless -e "$CONF_HASH{'blog_directory'}/article";
         mkdir "$CONF_HASH{'blog_directory'}/comment" unless -e "$CONF_HASH{'blog_directory'}/comment";
-    }
-    else {
-        print "Obviously, you didn't specify a BLOG_DIRECTORY in your $CONFIG\n";
-        exit 11;
     }
 }
 close $CONFFD;
@@ -158,25 +155,7 @@ if ($ARGV[0]) {
         }
     }
     elsif ($ARGV[0] eq "update") {
-        if ($ARGV[1]) {
-            if ($ARGV[1] eq "LOCAL") {
-                print "updating local bazinga structure ... ";
-                update_bazinga($ARGV[1]);
-                print "DONE!\n";
-            }
-            elsif ($ARGV[1] eq "REMOTE") {
-                print "updating remote bazinga structure ... ";
-#                update_bazinga($ARGV[1]);
-                print "DONE!\n";
-            }
-            else { 
-                print "$ARGV[1] is not a valid identifier. Needs to be LOCAL or REMOTE.\n"; 
-            }
-        }
-        else {
-            print "You have to specify the structure that should be updated.\n";
-            exit 7;
-        }
+        update_bazinga();
     }
     else { 
         print "You entered an unknown parameter, please check.\n"; 
@@ -372,4 +351,19 @@ sub replace_content {
     delete_content($id);
     add_content(1, $path, $id);
 }
-sub update_bazinga {}
+sub update_bazinga {
+    for my $section (keys %{$BZG_HASH}) {
+    print "searching through section '$section' ...\n";
+        for (keys %{$BZG_HASH->{$section}}) { 
+            print $_, "\n";
+            generate_file($section, $_);
+        }
+    }
+    generate_index();
+}
+
+sub generate_file {
+    my ($type, $id) = @_;
+}
+
+sub generate_index {}
