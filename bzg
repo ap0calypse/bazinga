@@ -25,13 +25,24 @@ my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
 
 
 ################################################################################
+# %needed_params are the paramaters that should be given in the content files
+################################################################################
+
+my %needed_params = (
+    'article'   => [qw(author title email website text date time tags)],
+    'page'      => [qw(author title email website text date time)],
+    'comment'   => [qw(author email website text date time to_article)],
+);
+
+
+################################################################################
 # BZG_HASH is the mega-hash containing all the information.
 # if the file is too small (<5b) we can surely asume it doesn't exist,
 # otherwise we read in the hash from the file
 ################################################################################
 
 my $BZG_HASH;
-if ((stat $BZG_FILE)[7] > 5) {
+if (-e $BZG_FILE && (stat $BZG_FILE)[7] > 5) {
     $BZG_HASH = retrieve $BZG_FILE;
 }
 
@@ -66,7 +77,6 @@ close $CONFFD;
 
 die "not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
 die "configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
-print "you have no custom $CSS, that's ok if you want standard layout.\n" unless (-e $CSS);
 
 
 ################################################################################
@@ -83,7 +93,7 @@ if ($ARGV[0]) {
     elsif ($ARGV[0] eq "add") {
         if ($ARGV[1]) {
             if (-e $ARGV[1]) {
-                add_content($ARGV[1]);
+                add_content(1, $ARGV[1]);
             }
             else {
                 print "$ARGV[1] is not a file, please specify a path to a valid content file.\n"; 
@@ -113,9 +123,7 @@ if ($ARGV[0]) {
             if ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
                 if ($ARGV[2]) {
                     if (-e $ARGV[2]) {
-                        print "replacing content $ARGV[1] with $ARGV[2] ... ";
                         replace_content($ARGV[1], $ARGV[2]);
-                        print " DONE!\n";
                     }
                     else { 
                         print "$ARGV[1] is not a file, please specify a path to the content file.\n";
@@ -138,9 +146,7 @@ if ($ARGV[0]) {
     elsif ($ARGV[0] eq "check") {
         if ($ARGV[1]) {
             if (-e $ARGV[1]) {
-                print "checking article file $ARGV[1] for correctness ... ";
-#                check_article($ARGV[1]);
-                print "DONE!\n";
+                add_content(0, $ARGV[1]);
             }
             else { 
                 print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; 
@@ -252,18 +258,14 @@ sub list_contents {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: add_content
-# needs:    path to content file, (maybe ID, only if called from replace_content
+# needs:    1 or 0 (only check), path to content file, (maybe ID, only if called from replace_content
 # returns:  nothing
 # calls:    nothing
 # purpose:  processes the content file and fills the super hash with the content information
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub add_content {
-    my %needed_params = (
-        'article'   => [qw(author title email website text date time tags)],
-        'page'      => [qw(author title email website text date time)],
-        'comment'   => [qw(author email website text date time to_article)],
-    );
+    my $add = shift;
     my $content_file = shift;
     my $given_id = shift;
     my ($type, $random);
@@ -290,16 +292,25 @@ sub add_content {
         }
     }
     close $CONTFD;
+    my $correct = 1;
     for my $list_item (@{$needed_params{$type}}) {
         unless ( grep {/$list_item/} keys %{$BZG_HASH->{$type}{$random}}) {
             print "argument '$list_item' is missing in content-file, exiting.\n";
-            exit;
+            $correct = 0;
         }
     }
-    store $BZG_HASH, $BZG_FILE;
+    if ($correct) {
+        print "content file seems to be correct.\n";
+    }
+    else {
+        print "content file is corrupt, please check.\n";
+        exit;
+    }
+    if ($add) {
+        store $BZG_HASH, $BZG_FILE;
+        print "added article '$random'\n";
+    }
 }
-
-
 
 
 
@@ -359,8 +370,6 @@ sub delete_content {
 sub replace_content {
     my ($id, $path) = @_;
     delete_content($id);
-    add_content($path, $id);
+    add_content(1, $path, $id);
 }
-
-sub check_content {}
 sub update_bazinga {}
