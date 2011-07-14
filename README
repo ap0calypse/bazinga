@@ -50,7 +50,8 @@ Setup is pretty easy. If you read this you might already as well have installed 
 doesn't need to be located anywhere special. The only file that needs to be in the right
 place is the main configuration file, which must be located in "~/.bazinga/bazinga.conf"
 or equally symlinked to this location. Some sample configuration files can be found in the
-conf/ directory.
+conf/ directory. All the data will be stored in a file called "~/.bazinga/bazinga.dat". It
+is a perlish stored variable and won't be easy to read. It can be backed up whenever you want.
 
 
 2.1. CONFIGURATION
@@ -58,6 +59,9 @@ conf/ directory.
 The easiest way to get everything started is to copy one of the example configurations
 from the conf/ directory to ~/.bazinga/bazinga.conf and edit it to fit your needs.
 Configuration may look Perl'ish (well, because it is), but should be pretty self-explaining.
+
+There is also a style.css which should be put in your .bazinga-directory. You can change it
+to whatever you want. bzg will then use this css to pimp your blog.
 
 
 3. FEATURES
@@ -67,4 +71,11 @@ taken from the examples/ directory. These examples should cover the range of wha
 possible. If you have feature requests or want something added, please contact me or 
 implement it yourself and send me a patch. Would be awesome.
 
+4. CREDITS
 
+Special thanks to Linus Torvalds for creating git. It helped me a lot.
+Thanks to the people over there at nanoblogger.
+
+4.1. LICENSE
+
+dunno yet ...
