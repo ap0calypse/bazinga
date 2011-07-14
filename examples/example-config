@@ -1,15 +1,21 @@
 # bazinga configuration file
 
+# user identification
+BLOG_OWNER: "John Doe"
+BLOG_EMAIL: "john@doe.com"
+BLOG_WEBSITE: "http://www.doe.com"
+
 # directory where the local bazinga structure is created
 BLOG_DIRECTORY: "/tmp/blog"
 
 # blog title
-BLOG_TITLE: "/home/ap0calypse"
+BLOG_TITLE: "my blog"
 
 # blog subtitle
-BLOG_SUBTITLE: "yet another blog"
+BLOG_SUBTITLE: "super interesting, really!"
 
 # blog look and feel
 # 1: menu left, body middle
 # 2: menu right, body middle
 BLOG_DESIGN: "1"
+

@@ -70,6 +70,15 @@ while (<$CONFFD>) {
     if (m/.*BLOG_SUBTITLE: *\"(.+)\".*/) {
         $CONF_HASH{'blog_subtitle'} = $1;
     }
+    if (m/.*BLOG_OWNER: *\"(.+)\".*/) {
+        $CONF_HASH{'blog_owner'} = $1;
+    }
+    if (m/.*BLOG_EMAIL: *\"(.+)\".*/) {
+        $CONF_HASH{'blog_email'} = $1;
+    }
+    if (m/.*BLOG_WEBSITE: *\"(.+)\".*/) {
+        $CONF_HASH{'blog_website'} = $1;
+    }
 }
 close $CONFFD;
 
@@ -92,6 +101,16 @@ if ($ARGV[0]) {
     }
     elsif ($ARGV[0] eq "list") {
         list_contents() and exit 0;
+    }
+    elsif ($ARGV[0] eq "generate") {
+        if ($ARGV[1]) {
+            if ($ARGV[1] =~ m/(page|article|comment){1}/) {
+                make_template($1);
+            }
+            else {
+                print "second argument must be 'article', 'comment' or 'page'.\n";
+            }
+        }
     }
     elsif ($ARGV[0] eq "add") {
         if ($ARGV[1]) {
@@ -187,6 +206,7 @@ sub print_usage {
     quick overview:
     
         bzg help
+        bzg generate (article | comment | page)
         bzg add FILE
         bzg delete ID
         bzg replace ID FILE
@@ -196,6 +216,7 @@ sub print_usage {
 
     examples:
 
+        bzg generate article > my_template_article.txt
         bzg add my_fancy_new_article.txt
         bzg add about_me_page.txt
         bzg add comment_from_some_dude.txt
@@ -378,6 +399,7 @@ sub generate_index {
     my $indexfile = $CONF_HASH{'blog_directory'} . "/index.html";
     open my $TEMPLATE, "< $templatefile" or die "$!";
     open my $INDEX, "> $indexfile" or die "$!";
+    my %date_hash;
     while (my $line = <$TEMPLATE>) {
         if ($line =~ m/\[BLOG_TITLE\]/gmx) {
             $line =~ s/\[BLOG_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
@@ -396,10 +418,79 @@ sub generate_index {
             }
             $line .= "</ul>\n";
         }
+        if ($line =~ m/\[CONTENT\]/gmx) {
+            $line =~ s/\[CONTENT\]//gmx;
+            for (keys %{$BZG_HASH->{'articles'}}) {
+                push @{$date_hash{$BZG_HASH->{'articles'}{$_}{'date'} . " " . $BZG_HASH->{'articles'}{$_}{'time'}}}, $_;
+            }
+            for (reverse sort keys %date_hash) {
+                for my $id (@{$date_hash{$_}}) {
+                    $line .= "$BZG_HASH->{'articles'}{$id}{'title'}</br >";
+                }
+            }
+        }
 
         print $INDEX $line;
     }
     close $TEMPLATE;
     close $INDEX;
 }
+
+
+sub make_template {
+    my $type = shift;
+    $type = "articles" if $type eq "article";
+    $type = "comments" if $type eq "comment";
+    $type = "pages" if $type eq "page";
+    my $date = sprintf("%d-%02d-%02d", (localtime)[5] + 1900, (localtime)[4] + 1, (localtime)[3]);
+    my $time = sprintf("%02d:%02d", (localtime)[2], (localtime)[1]);
+    $CONF_HASH{'blog_owner'} = $USERNAME unless $CONF_HASH{'blog_owner'};
+    if ($type eq 'articles') {
+        print <<"EOTEMP";
+category: "$type"
+title: ""
+author: "$CONF_HASH{"blog_owner"}"
+website: "$CONF_HASH{"blog_website"}"
+email: "$CONF_HASH{"blog_email"}"
+date: "$date"
+time: "$time"
+tags: ""
+START_TEXT
+
+END_TEXT
+
+EOTEMP
+    }
+    elsif ($type eq "comments") {
+        print <<"EOTEMP";
+category: "$type"
+to_article: ""
+author: ""
+website: ""
+email: ""
+date: ""
+time: ""
+START_TEXT
+
+END_TEXT
+
+EOTEMP
+    }
+    elsif ($type eq "pages") {
+        print <<"EOTEMP";
+category: "$type"
+title: ""
+author: "$CONF_HASH{"blog_owner"}"
+website: "$CONF_HASH{"blog_website"}"
+email: "$CONF_HASH{"blog_email"}"
+date: "$date"
+time: "$time"
+START_TEXT
+
+END_TEXT
+
+EOTEMP
+    }
+}
+
 
