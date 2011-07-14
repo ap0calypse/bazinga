@@ -13,13 +13,15 @@
             <h1>[BLOG_TITLE]</h1>
             <h2>[BLOG_SUBTITLE]</h1>
         </div>
-        <br /> 
-        <div class='menu'>
-                [MENU]
-        </div>
+        <br />
+        <div class='main'>
+            <div class='menu'>
+                    [MENU]
+            </div>
 
-        <div class='content'>
-            [CONTENT]
+            <div class='content'>
+                [CONTENT]
+            </div>
         </div>
     </body>
 </html>
