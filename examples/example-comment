@@ -5,12 +5,12 @@ email: "jim@beam.org"
 title: "comment on your article"
 date: "2011-07-02"
 time: "12:00"
-to_article: "36b46ba830589b47"
+to_article: ""
 
 START_TEXT
 
-it is also possible to use formatting rules in comments. You can _underline_ your text or make it
-*bold*. anything possible in articles, is possible in comments too.
+it is also possible to use formatting rules in comments. You can [u]underline your text[/u] or make it
+[b]bold[/b]. anything possible in articles, is possible in comments too.
 
 CODE_START
 #!/usr/bin/perl

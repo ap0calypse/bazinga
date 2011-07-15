@@ -414,6 +414,7 @@ sub generate_index {
             $line =~ s/\[MENU\]//gmx;
             $line = "<ul>\n";
             for (sort keys %{$BZG_HASH}) {
+                next if ($_ eq 'comments');
                 $line .= "<li>$_</li>\n";
             }
             $line .= "</ul>\n";
@@ -425,7 +426,8 @@ sub generate_index {
             }
             for (reverse sort keys %date_hash) {
                 for my $id (@{$date_hash{$_}}) {
-                    $line .= "$BZG_HASH->{'articles'}{$id}{'title'}</br >";
+                    $line .= "<h2>$BZG_HASH->{'articles'}{$id}{'title'}</h2>";
+                    $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'});
                 }
             }
         }
@@ -434,6 +436,29 @@ sub generate_index {
     }
     close $TEMPLATE;
     close $INDEX;
+}
+
+sub convert_text {
+    my $text = shift;
+    $text =~ s/\[b\]([[:print:]]+)\[\/b\]/<b>$1<\/b>/gmx;
+    $text =~ s/\[i\]([[:print:]]+)\[\/i\]/<i>$1<\/i>/gmx;
+    $text =~ s/\[u\]([[:print:]]+)\[\/u\]/<u>$1<\/u>/gmx;
+    $text =~ s/\r//gmx;
+    $text =~ s/\n/<br \/>/gmx;
+    if ($text =~ m/CODE_START(.+)CODE_END/gmx) {
+        my $code = $1;
+        $text =~ s/CODE_START.+CODE_END//gmx;
+        my @lines = split /<br \/>/, $code;
+        shift @lines and pop @lines;
+        my $i = 1;
+        $text .= "<div class='code'>\n";
+        for (@lines) {
+            $text .= "$i $_<br />\n";
+            $i++;
+        }
+        $text .= "</div>\n";
+    }
+    return $text;
 }
 
 
