@@ -14,6 +14,14 @@ This is my first article published with bazinga. It will show you some features 
 
 If you want to insert a code snipped, bazinga has a special feature for that:
 
+LATEX_START
+\mathcal B}(t\bar{t} \rightarrow W b Z c) = 
+\frac{ N_\mathrm{candidates} - N_\mathrm{background} }
+{{\mathcal A} \cdot \int {\mathcal L} dt \cdot \sigma_{t \bar{t}}}
+LATEX_END
+
+
+
 CODE_START
 #!/usr/bin/perl
 use strict;

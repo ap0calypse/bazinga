@@ -453,10 +453,15 @@ sub convert_text {
             $latex_present++;
             $in_latex = 1;
             open $LATEXFD, "> $latexnum.tex";
+            print $LATEXFD "\\begin{document}\n";
+            print $LATEXFD "\\documentclass{article}\n";
+            print $LATEXFD "\\pagestyle{empty}\n";
+            print $LATEXFD "\\begin{document}\n";
             next;
         }
         if (m/LATEX_END/) {
             $in_latex = 0;
+            print $LATEXFD "\\end{document}\n";
             close $LATEXFD;
             next;
         }
