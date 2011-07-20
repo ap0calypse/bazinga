@@ -440,25 +440,51 @@ sub generate_index {
 
 sub convert_text {
     my $text = shift;
-    $text =~ s/\[b\]([[:print:]]+)\[\/b\]/<b>$1<\/b>/gmx;
-    $text =~ s/\[i\]([[:print:]]+)\[\/i\]/<i>$1<\/i>/gmx;
-    $text =~ s/\[u\]([[:print:]]+)\[\/u\]/<u>$1<\/u>/gmx;
     $text =~ s/\r//gmx;
-    $text =~ s/\n/<br \/>/gmx;
-    if ($text =~ m/CODE_START(.+)CODE_END/gmx) {
-        my $code = $1;
-        $text =~ s/CODE_START.+CODE_END//gmx;
-        my @lines = split /<br \/>/, $code;
-        shift @lines and pop @lines;
-        my $i = 1;
-        $text .= "<div class='code'>\n";
-        for (@lines) {
-            $text .= "$i $_<br />\n";
-            $i++;
+    my ($in_code, $in_latex) = (0,0);
+    my $latexnum = 1;
+    my $LATEXFD;
+    my $latex_present = 0;
+    my @textlines = split /\n/, $text;
+    my $finaltext;
+    for (@textlines) {
+        if (m/LATEX_START/) {
+            $latex_present++;
+            $in_latex = 1;
+            open $LATEXFD, "> $latexnum.tex";
         }
-        $text .= "</div>\n";
+        if (m/LATEX_END/) {
+            $in_latex = 0;
+            close $LATEXFD;
+        }
+        if (m/CODE_START/) {
+            $in_code = 1;
+            $finaltext .= "<div class='code'>\n";
+        }
+        if (m/CODE_END/) {
+            $in_code = 0;
+            $finaltext .= "</div>\n";
+        }
+
+        if ($in_latex) {
+            print $LATEXFD $_;
+        }
+        elsif ($in_code) {
+            $finaltext .= "$_ <br />";
+        }
+        else {
+            s/\[b\]/<b>/;
+            s/\[i\]/<i>/;
+            s/\[u\]/<u>/;
+            s/\[\/b\]/<\/b>/;
+            s/\[\/i\]/<\/i>/;
+            s/\[\/u\]/<\/u>/;
+            s/\n/<br \/>/;
+            $finaltext .= $_;
+        }
     }
-    return $text;
+    print $finaltext;
+    return $finaltext;
 }
 
 
