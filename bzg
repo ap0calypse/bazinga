@@ -441,6 +441,7 @@ sub generate_index {
 sub convert_text {
     my $text = shift;
     $text =~ s/\r//gmx;
+    $text =~ s/\n/<br \/>\n/;
     my ($in_code, $in_latex) = (0,0);
     my $latexnum = 1;
     my $LATEXFD;
@@ -452,18 +453,22 @@ sub convert_text {
             $latex_present++;
             $in_latex = 1;
             open $LATEXFD, "> $latexnum.tex";
+            next;
         }
         if (m/LATEX_END/) {
             $in_latex = 0;
             close $LATEXFD;
+            next;
         }
         if (m/CODE_START/) {
             $in_code = 1;
             $finaltext .= "<div class='code'>\n";
+            next;
         }
         if (m/CODE_END/) {
             $in_code = 0;
             $finaltext .= "</div>\n";
+            next;
         }
 
         if ($in_latex) {
@@ -479,11 +484,9 @@ sub convert_text {
             s/\[\/b\]/<\/b>/;
             s/\[\/i\]/<\/i>/;
             s/\[\/u\]/<\/u>/;
-            s/\n/<br \/>/;
             $finaltext .= $_;
         }
     }
-    print $finaltext;
     return $finaltext;
 }
 

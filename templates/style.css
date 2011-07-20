@@ -37,8 +37,7 @@ div.main {
 }
 
 div.code {
-    margin-left: 10px;
-    margin-right: 10px;
+    margin: 10px;
     background-color: #ccc;
     padding: 5px;
     border: solid 1px #000;
