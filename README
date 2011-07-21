@@ -5,6 +5,7 @@ README file for bazinga 0.1a
 1.2. ... Name
 2. ..... Setup
 2.1. ... Configuration
+2.2. ... Directory Structure
 3. ..... Features
 3.1. ... Usage Scenarios
 4. ..... Credits
@@ -57,11 +58,40 @@ is a perlish stored variable and won't be easy to read. It can be backed up when
 2.1. CONFIGURATION
 
 The easiest way to get everything started is to copy one of the example configurations
-from the conf/ directory to ~/.bazinga/bazinga.conf and edit it to fit your needs.
+from the conf/ directory to ~/.bazinga/bazinga.conf and edit it to fit your needs. 
 Configuration may look Perl'ish (well, because it is), but should be pretty self-explaining.
 
 There is also a style.css which should be put in your .bazinga-directory. You can change it
 to whatever you want. bzg will then use this css to pimp your blog.
+
+
+2.2. DIRECTORY STRUCTURE
+
+Once you edited your bazinga.conf with the needed information and you added an article or page,
+you can update your blog structure with "bzg update". This will create the following similar structure:
+
+blog/
+  -> index.html
+  -> articles/
+       -> 5238fed2.../
+            -> index.html
+            -> img/
+                 -> 1.png
+                 -> 2.png
+                 -> ...
+       -> 6732.../
+            -> index.html
+            -> ...
+  -> pages/
+       -> 5723498.../
+            -> index.html
+            -> img/
+                 -> 1.png
+                 -> 2.png
+                 -> ...
+       -> 6732.../
+            -> index.html
+            -> ..
 
 
 3. FEATURES
