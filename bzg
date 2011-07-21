@@ -392,6 +392,43 @@ sub update_bazinga {
 
 sub generate_file {
     my ($type, $id) = @_;
+    my $templatefile = "./templates/index.template";
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type");
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id");
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id/img");
+    my $indexfile = $CONF_HASH{'blog_directory'} . "/$type/$id/index.html";
+    open my $TEMPLATE, "< $templatefile" or die "$!";
+    open my $INDEX, "> $indexfile" or die "$!";
+    my %date_hash;
+    while (my $line = <$TEMPLATE>) {
+        if ($line =~ m/\[BLOG_TITLE\]/gmx) {
+            $line =~ s/\[BLOG_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
+        }
+        if ($line =~ m/\[BLOG_SUBTITLE\]/gmx) {
+            $line =~ s/\[BLOG_SUBTITLE\]/$CONF_HASH{'blog_subtitle'}/gmx;
+        }
+        if ($line =~ m/\[STYLESHEET_LOCATION\]/gmx) {
+            $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/\.\.\/\.\/css\/style.css/gmx;
+        }
+        if ($line =~ m/\[MENU\]/gmx) {
+            $line =~ s/\[MENU\]//gmx;
+            $line = "<ul>\n";
+            for (sort keys %{$BZG_HASH}) {
+                next if ($_ eq 'comments');
+                $line .= "<li>$_</li>\n";
+            }
+            $line .= "</ul>\n";
+        }
+        if ($line =~ m/\[CONTENT\]/gmx) {
+            $line =~ s/\[CONTENT\]//gmx;
+            $line .= "<h2>$BZG_HASH->{$type}{$id}{'title'}</h2>";
+            $line .= convert_text_for_page($BZG_HASH->{$type}{$id}{'text'}, $id);
+        }
+
+        print $INDEX $line;
+    }
+    close $TEMPLATE;
+    close $INDEX;
 }
 
 sub generate_index {
@@ -426,8 +463,8 @@ sub generate_index {
             }
             for (reverse sort keys %date_hash) {
                 for my $id (@{$date_hash{$_}}) {
-                    $line .= "<h2>$BZG_HASH->{'articles'}{$id}{'title'}</h2>";
-                    $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'}, $id);
+                    $line .= "<h2><a href='./articles/$id/index.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
+                    $line .= convert_text_for_index($BZG_HASH->{'articles'}{$id}{'text'}, $id);
                 }
             }
         }
@@ -438,7 +475,8 @@ sub generate_index {
     close $INDEX;
 }
 
-sub convert_text {
+
+sub convert_text_for_page {
     my $text = shift;
     my $art_id = shift;
     $text =~ s/\r//gmx;
@@ -457,7 +495,7 @@ sub convert_text {
             print $LATEXFD "\\documentclass{article}\n";
             print $LATEXFD "\\pagestyle{empty}\n";
             print $LATEXFD "\\begin{document}\n";
-            $finaltext .= "<img src='$latex_present.png' alt='$latex_present' />\n";
+            $finaltext .= "<br /><img src='./img/$latex_present.png' alt='$latex_present' /><br />\n";
             next;
         }
         if (m/LATEX_END/) {
@@ -494,10 +532,77 @@ sub convert_text {
         }
     }
     for (1 .. $latex_present) {
+        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $latex_present.tex &> /dev/null");
         system("dvipng $latex_present.dvi -bg 'Transparent' -D 120 " .
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$latex_present.png &> /dev/null");
+        unlink("1.tex", "1.aux", "1.dvi", "1.log");
+    }
+    return $finaltext;
+}
+sub convert_text_for_index {
+    my $text = shift;
+    my $art_id = shift;
+    $text =~ s/\r//gmx;
+    $text =~ s/\n/<br \/>\n/;
+    my ($in_code, $in_latex) = (0,0);
+    my $LATEXFD;
+    my $latex_present = 0;
+    my @textlines = split /\n/, $text;
+    my $finaltext;
+    for (@textlines) {
+        if (m/LATEX_START/) {
+            $latex_present++;
+            $in_latex = 1;
+            open $LATEXFD, "> $latex_present.tex";
+            print $LATEXFD "\\begin{document}\n";
+            print $LATEXFD "\\documentclass{article}\n";
+            print $LATEXFD "\\pagestyle{empty}\n";
+            print $LATEXFD "\\begin{document}\n";
+            $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present.png' alt='$latex_present' /><br />\n";
+            next;
+        }
+        if (m/LATEX_END/) {
+            $in_latex = 0;
+            print $LATEXFD "\\end{document}\n";
+            close $LATEXFD;
+            next;
+        }
+        if (m/CODE_START/) {
+            $in_code = 1;
+            $finaltext .= "<div class='code'>\n";
+            next;
+        }
+        if (m/CODE_END/) {
+            $in_code = 0;
+            $finaltext .= "</div>\n";
+            next;
+        }
+
+        if ($in_latex) {
+            print $LATEXFD $_;
+        }
+        elsif ($in_code) {
+            $finaltext .= "$_ <br />";
+        }
+        else {
+            s/\[b\]/<b>/;
+            s/\[i\]/<i>/;
+            s/\[u\]/<u>/;
+            s/\[\/b\]/<\/b>/;
+            s/\[\/i\]/<\/i>/;
+            s/\[\/u\]/<\/u>/;
+            $finaltext .= $_;
+        }
+    }
+    for (1 .. $latex_present) {
+        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
+        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
+        system("texi2dvi -q $latex_present.tex &> /dev/null");
+        system("dvipng $latex_present.dvi -bg 'Transparent' -D 120 " .
+               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$latex_present.png &> /dev/null");
+        unlink("1.tex", "1.aux", "1.dvi", "1.log");
     }
     return $finaltext;
 }
