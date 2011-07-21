@@ -535,7 +535,7 @@ sub convert_text_for_page {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $latex_present.tex &> /dev/null");
-        system("dvipng $latex_present.dvi -bg 'Transparent' -D 120 " .
+        system("dvipng $latex_present.dvi -bg 'Transparent' -D 130 " .
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$latex_present.png &> /dev/null");
         unlink("1.tex", "1.aux", "1.dvi", "1.log");
     }
@@ -600,7 +600,7 @@ sub convert_text_for_index {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $latex_present.tex &> /dev/null");
-        system("dvipng $latex_present.dvi -bg 'Transparent' -D 120 " .
+        system("dvipng $latex_present.dvi -bg 'Transparent' -D 130 " .
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$latex_present.png &> /dev/null");
         unlink("1.tex", "1.aux", "1.dvi", "1.log");
     }
