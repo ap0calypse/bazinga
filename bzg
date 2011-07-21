@@ -427,7 +427,7 @@ sub generate_index {
             for (reverse sort keys %date_hash) {
                 for my $id (@{$date_hash{$_}}) {
                     $line .= "<h2>$BZG_HASH->{'articles'}{$id}{'title'}</h2>";
-                    $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'});
+                    $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'}, $id);
                 }
             }
         }
@@ -440,6 +440,7 @@ sub generate_index {
 
 sub convert_text {
     my $text = shift;
+    my $art_id = shift;
     $text =~ s/\r//gmx;
     $text =~ s/\n/<br \/>\n/;
     my ($in_code, $in_latex) = (0,0);
@@ -493,8 +494,10 @@ sub convert_text {
         }
     }
     for (1 .. $latex_present) {
+        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $latex_present.tex &> /dev/null");
-        system("dvipng $latex_present.dvi -bg 'Transparent' -D 120 -o $CONF_HASH{'blog_directory'}/$latex_present.png &> /dev/null");
+        system("dvipng $latex_present.dvi -bg 'Transparent' -D 120 " .
+               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$latex_present.png &> /dev/null");
     }
     return $finaltext;
 }
