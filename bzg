@@ -534,9 +534,9 @@ sub convert_text {
     my $is_index = shift;
     $text =~ s/\r//gmx;
     $text =~ s/\n/<br \/>\n/;
-    my ($in_code, $in_latex) = (0,0);
-    my $LATEXFD;
-    my $latex_present = 0;
+    my ($in_code, $in_latex, $in_gnuplot) = (0,0,0);
+    my ($LATEXFD, $GNUPLOTFD);;
+    my ($latex_present, $gnuplot_present) = (0, 0);
     my @textlines = split /\n/, $text;
     my $finaltext;
     for (@textlines) {
@@ -549,10 +549,10 @@ sub convert_text {
             print $LATEXFD "\\pagestyle{empty}\n";
             print $LATEXFD "\\begin{document}\n";
             if ($is_index) {
-                $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present.png' alt='$latex_present' /><br />\n";
+                $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
             }
             else {
-                $finaltext .= "<br /><img src='./img/$latex_present.png' alt='$latex_present' /><br />\n";
+                $finaltext .= "<br /><img src='./img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
             }
             next;
         }
@@ -560,6 +560,25 @@ sub convert_text {
             $in_latex = 0;
             print $LATEXFD "\\end{document}\n";
             close $LATEXFD;
+            next;
+        }
+        if (m/GNUPLOT_START/) {
+            $gnuplot_present++;
+            $in_gnuplot = 1;
+            open $GNUPLOTFD, "> $gnuplot_present.plot";
+            print $GNUPLOTFD "set terminal png\n";
+            print $GNUPLOTFD "set output '$gnuplot_present-plot.png'\n";
+            if ($is_index) {
+                $finaltext .= "<br /><img src='./articles/$art_id/img/$gnuplot_present-plot.png' alt='$gnuplot_present' /><br />\n";
+            }
+            else {
+                $finaltext .= "<br /><img src='./img/$gnuplot_present-plot.png' alt='$gnuplot_present' /><br />\n";
+            }
+            next;
+        }
+        if (m/GNUPLOT_END/) {
+            $in_gnuplot = 0;
+            close $GNUPLOTFD;
             next;
         }
         if (m/CODE_START/) {
@@ -574,10 +593,13 @@ sub convert_text {
         }
 
         if ($in_latex) {
-            print $LATEXFD $_;
+            print $LATEXFD $_ . "\n";
         }
         elsif ($in_code) {
             $finaltext .= "$_ <br />";
+        }
+        elsif ($in_gnuplot) {
+            print $GNUPLOTFD $_ . "\n";
         }
         else {
             s/\[b\]/<b>/;
@@ -594,8 +616,15 @@ sub convert_text {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $_.tex &> /dev/null");
         system("dvipng $_.dvi -bg 'Transparent' -D 130 -O .1in " .
-               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_.png &> /dev/null");
+               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png &> /dev/null");
         unlink("$_.tex", "$_.aux", "$_.dvi", "$_.log");
+    }
+    for (1 .. $gnuplot_present) {
+        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
+        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
+        system("gnuplot $_.plot &> /dev/null");
+        system("convert -scale 400x300 $_-plot.png $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-plot.png");
+        unlink("$_.plot", "$_-plot.png");
     }
     return $finaltext;
 }

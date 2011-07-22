@@ -56,6 +56,12 @@ LATEX_START
 </math>
 LATEX_END
 
+GNUPLOT_START
+set key left box
+set samples 50
+plot [-10:10] sin(x),atan(x),cos(atan(x))
+GNUPLOT_END
+
 CODE_START
 #!/usr/bin/perl
 use strict;
