@@ -592,10 +592,10 @@ sub convert_text {
     for (1 .. $latex_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("texi2dvi -q $latex_present.tex &> /dev/null");
-        system("dvipng $latex_present.dvi -bg 'Transparent' -D 130 -O .1in " .
-               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$latex_present.png &> /dev/null");
-        unlink("1.tex", "1.aux", "1.dvi", "1.log");
+        system("texi2dvi -q $_.tex &> /dev/null");
+        system("dvipng $_.dvi -bg 'Transparent' -D 130 -O .1in " .
+               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_.png &> /dev/null");
+        unlink("$_.tex", "$_.aux", "$_.dvi", "$_.log");
     }
     return $finaltext;
 }
