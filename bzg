@@ -1,7 +1,6 @@
 #!/usr/bin/perl
 use strict;
 use warnings;
-use Data::Dumper;
 use File::Copy;
 use Storable;
 use Env qw(HOME USERNAME);
@@ -20,8 +19,8 @@ use v5.10;
 my $VERSION = "0.1a";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
-my %CONF_HASH;
 my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
+my %CONF_HASH;
 
 
 ################################################################################
@@ -378,6 +377,22 @@ sub replace_content {
     delete_content($id);
     add_content(1, $path, $id);
 }
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: update_bazinga
+# needs:    nothing
+# returns:  nothing
+# calls:    generate_file, generate_index
+# purpose:  copies an existing css file from the users home dir to the structure or dies if there
+#           is no such css. after that it loops through the sections and then through the ids
+#           and passes them to generate_file for further processing. in the end, the index is
+#           (re)generated.
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 sub update_bazinga {
     if (-e $CSS) {
         copy($CSS, "$CONF_HASH{'blog_directory'}/css/style.css") or die "copy of css failed: $!\n";
@@ -389,6 +404,19 @@ sub update_bazinga {
     }
     generate_index();
 }
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: generate_file
+# needs:    category (articles/comments/pages) and the ID
+# returns:  nothing
+# calls:    convert_text
+# purpose:  uses the index-template to generate a website for an article or a page. additionally,
+#           it creates the needed directory-structure.
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub generate_file {
     my ($type, $id) = @_;
@@ -422,7 +450,7 @@ sub generate_file {
         if ($line =~ m/\[CONTENT\]/gmx) {
             $line =~ s/\[CONTENT\]//gmx;
             $line .= "<h2>$BZG_HASH->{$type}{$id}{'title'}</h2>";
-            $line .= convert_text_for_page($BZG_HASH->{$type}{$id}{'text'}, $id);
+            $line .= convert_text($BZG_HASH->{$type}{$id}{'text'}, $id);
         }
 
         print $INDEX $line;
@@ -430,6 +458,18 @@ sub generate_file {
     close $TEMPLATE;
     close $INDEX;
 }
+
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: generate_index
+# needs:    nothing
+# returns:  nothing
+# calls:    convert_text
+# purpose:  uses the index-template to generate the main index page.
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub generate_index {
     my $templatefile = "./templates/index.template";
@@ -464,7 +504,7 @@ sub generate_index {
             for (reverse sort keys %date_hash) {
                 for my $id (@{$date_hash{$_}}) {
                     $line .= "<h2><a href='./articles/$id/index.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
-                    $line .= convert_text_for_index($BZG_HASH->{'articles'}{$id}{'text'}, $id);
+                    $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'}, $id, "index");
                 }
             }
         }
@@ -476,9 +516,22 @@ sub generate_index {
 }
 
 
-sub convert_text_for_page {
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: convert_text
+# needs:    scalar textstring from generate_file, article-id, ("index")
+# returns:  processed scalar textstring
+# calls:    systemcalls: texi2dvi, dvipng
+# purpose:  converts the string between START_TEXT and END_TEXT from the content file into desired
+#           format. converts latex-formulae into pictures, hihjlights the code, and so on.
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub convert_text {
     my $text = shift;
     my $art_id = shift;
+    my $is_index = shift;
     $text =~ s/\r//gmx;
     $text =~ s/\n/<br \/>\n/;
     my ($in_code, $in_latex) = (0,0);
@@ -495,7 +548,12 @@ sub convert_text_for_page {
             print $LATEXFD "\\documentclass{article}\n";
             print $LATEXFD "\\pagestyle{empty}\n";
             print $LATEXFD "\\begin{document}\n";
-            $finaltext .= "<br /><img src='./img/$latex_present.png' alt='$latex_present' /><br />\n";
+            if ($is_index) {
+                $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present.png' alt='$latex_present' /><br />\n";
+            }
+            else {
+                $finaltext .= "<br /><img src='./img/$latex_present.png' alt='$latex_present' /><br />\n";
+            }
             next;
         }
         if (m/LATEX_END/) {
@@ -535,78 +593,25 @@ sub convert_text_for_page {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $latex_present.tex &> /dev/null");
-        system("dvipng $latex_present.dvi -bg 'Transparent' -D 130 " .
-               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$latex_present.png &> /dev/null");
-        unlink("1.tex", "1.aux", "1.dvi", "1.log");
-    }
-    return $finaltext;
-}
-sub convert_text_for_index {
-    my $text = shift;
-    my $art_id = shift;
-    $text =~ s/\r//gmx;
-    $text =~ s/\n/<br \/>\n/;
-    my ($in_code, $in_latex) = (0,0);
-    my $LATEXFD;
-    my $latex_present = 0;
-    my @textlines = split /\n/, $text;
-    my $finaltext;
-    for (@textlines) {
-        if (m/LATEX_START/) {
-            $latex_present++;
-            $in_latex = 1;
-            open $LATEXFD, "> $latex_present.tex";
-            print $LATEXFD "\\begin{document}\n";
-            print $LATEXFD "\\documentclass{article}\n";
-            print $LATEXFD "\\pagestyle{empty}\n";
-            print $LATEXFD "\\begin{document}\n";
-            $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present.png' alt='$latex_present' /><br />\n";
-            next;
-        }
-        if (m/LATEX_END/) {
-            $in_latex = 0;
-            print $LATEXFD "\\end{document}\n";
-            close $LATEXFD;
-            next;
-        }
-        if (m/CODE_START/) {
-            $in_code = 1;
-            $finaltext .= "<div class='code'>\n";
-            next;
-        }
-        if (m/CODE_END/) {
-            $in_code = 0;
-            $finaltext .= "</div>\n";
-            next;
-        }
-
-        if ($in_latex) {
-            print $LATEXFD $_;
-        }
-        elsif ($in_code) {
-            $finaltext .= "$_ <br />";
-        }
-        else {
-            s/\[b\]/<b>/;
-            s/\[i\]/<i>/;
-            s/\[u\]/<u>/;
-            s/\[\/b\]/<\/b>/;
-            s/\[\/i\]/<\/i>/;
-            s/\[\/u\]/<\/u>/;
-            $finaltext .= $_;
-        }
-    }
-    for (1 .. $latex_present) {
-        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
-        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("texi2dvi -q $latex_present.tex &> /dev/null");
-        system("dvipng $latex_present.dvi -bg 'Transparent' -D 130 " .
+        system("dvipng $latex_present.dvi -bg 'Transparent' -D 130 -O .1in " .
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$latex_present.png &> /dev/null");
         unlink("1.tex", "1.aux", "1.dvi", "1.log");
     }
     return $finaltext;
 }
 
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: make_template 
+# needs:    category (article/comment/page)
+# returns:  doesn't return anything, but prints a template content file to STDOUT
+# calls:    nothing
+# purpose:  creates a template for an article, comment or page which the user can then pipe into 
+#           a file and change the values to his needs.
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub make_template {
     my $type = shift;
@@ -663,5 +668,3 @@ END_TEXT
 EOTEMP
     }
 }
-
-
