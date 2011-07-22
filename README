@@ -101,10 +101,15 @@ taken from the examples/ directory. These examples should cover the range of wha
 possible. If you have feature requests or want something added, please contact me or 
 implement it yourself and send me a patch. Would be awesome.
 
+At the moment, it is possible to make bold/italic/underlined text and insert code-snippets.
+The coolest feature however is the automatic conversion of LaTeX-formulae into images,
+which then are inserted instead.
+
 4. CREDITS
 
 Special thanks to Linus Torvalds for creating git. It helped me a lot.
 Thanks to the people over there at nanoblogger.
+Thanks to stefan-k for giving me the hint with the LaTeX-integration :).
 
 4.1. LICENSE
 
