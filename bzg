@@ -534,9 +534,9 @@ sub convert_text {
     my $is_index = shift;
     $text =~ s/\r//gmx;
     $text =~ s/\n/<br \/>\n/;
-    my ($in_code, $in_latex, $in_gnuplot) = (0,0,0);
-    my ($LATEXFD, $GNUPLOTFD);;
-    my ($latex_present, $gnuplot_present) = (0, 0);
+    my ($in_code, $in_latex, $in_gnuplot, $in_image) = (0,0,0,0);
+    my ($LATEXFD, $GNUPLOTFD, $IMAGEFD);
+    my ($latex_present, $gnuplot_present, $image_present) = (0, 0, 0);
     my @textlines = split /\n/, $text;
     my $finaltext;
     for (@textlines) {

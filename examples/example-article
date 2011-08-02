@@ -78,4 +78,8 @@ CODE_END
 
 text
 
+IMAGE_START
+/tmp/example-pic.png
+IMAGE_END
+
 END_TEXT
