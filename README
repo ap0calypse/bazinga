@@ -35,8 +35,9 @@ compete with them in flexibility and feature-richness, but the clear advantages 
 
     - completely independent from fancy features (eq. PHP)
     - easy to maintain
-    - easy to make backups (just backup the files and you're fine)
+    - easy to make backups (just backup the data-file and you're fine)
     - commandline interface ('bzg') (that's where git and nanoblogger inspired me)
+    - LaTeX- and gnuplot-integration
 
 Of course, if you aren't used to work with terminals or generally with text editors
 it might be confusing, but if you are a person like me (and I guess you are, otherwise:
@@ -111,14 +112,17 @@ At the moment, it is possible to make bold/italic/underlined text and insert cod
 The coolest feature however is the automatic conversion of LaTeX-formulae into images,
 which then are inserted instead.
 
+
 3.1. KEYWORDS
 
 bazinga comes with some predefined keywords, which can be inserted in any article or page.
+
 
 3.1.1. TEXT FORMATING
 
 [b]text[/b] will produce bold text, [i]text[/i] will produce italic text, [u]text[/u] will
 produce underlined text. Newline breaks will be automatically converted to <br />.
+
 
 3.1.2. LATEX-INSERTION
 
@@ -129,15 +133,18 @@ LATEX_START
 ....
 LATEX_END
 
+
 3.1.3. GNUPLOT-INSERTION
 
 With gnuplot formulae it is the same as with LaTeX. You just enter the wanted things between
 GNUPLOT_START and GNUPLOT_END.
 
+
 3.1.4. IMAGE-INSERTION
 
 If you specify a valid path to an image between IMAGE_START and IMAGE_END, bazinga will
 automatically insert the picture instead.
+
 
 3.1.5. IMAGE GALLERIES
 
