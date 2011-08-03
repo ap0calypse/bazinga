@@ -136,7 +136,15 @@ GNUPLOT_START and GNUPLOT_END.
 
 3.1.4. IMAGE-INSERTION
 
+If you specify a valid path to an image between IMAGE_START and IMAGE_END, bazinga will
+automatically insert the picture instead.
+
 3.1.5. IMAGE GALLERIES
+
+If you want to insert many pictures at once and don't want to use the IMAGE_START-IMAGE_END method,
+you can also use the GALLERY_START-GALLERY_END-method. Basically it works the same, except
+that bazinga uses the pictures you specify and creates a gallery with thumbnails pointing
+to the original images. bazinga automatically does the dirty work for you.
 
 
 4. CREDITS
