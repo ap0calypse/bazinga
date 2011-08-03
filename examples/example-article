@@ -82,4 +82,10 @@ IMAGE_START
 /tmp/example-pic.png
 IMAGE_END
 
+GALLERY_START
+/tmp/example-pic.png
+/tmp/example-pic.png
+/tmp/example-pic.png
+GALLERY_END
+
 END_TEXT

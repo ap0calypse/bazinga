@@ -7,7 +7,13 @@ README file for bazinga 0.1a
 2.1. ... Configuration
 2.2. ... Directory Structure
 3. ..... Features
-3.1. ... Usage Scenarios
+3.1. ... Keywords
+3.1.1. . Text Formating
+3.1.2. . LaTeX-insertion
+3.1.3. . Gnuplot-insertion
+3.1.4. . Image-insertion
+3.1.5. . Image Galeries
+3.2. ... Usage Scenarios
 4. ..... Credits
 4.1. ... License
 
@@ -105,11 +111,39 @@ At the moment, it is possible to make bold/italic/underlined text and insert cod
 The coolest feature however is the automatic conversion of LaTeX-formulae into images,
 which then are inserted instead.
 
+3.1. KEYWORDS
+
+bazinga comes with some predefined keywords, which can be inserted in any article or page.
+
+3.1.1. TEXT FORMATING
+
+[b]text[/b] will produce bold text, [i]text[/i] will produce italic text, [u]text[/u] will
+produce underlined text. Newline breaks will be automatically converted to <br />.
+
+3.1.2. LATEX-INSERTION
+
+If you want to include LaTeX-formulae, it is very simple. bazinga will use everything between
+LATEX_START and LATEX_END, converts it to png and inserts it instead. For example:
+
+LATEX_START
+....
+LATEX_END
+
+3.1.3. GNUPLOT-INSERTION
+
+With gnuplot formulae it is the same as with LaTeX. You just enter the wanted things between
+GNUPLOT_START and GNUPLOT_END.
+
+3.1.4. IMAGE-INSERTION
+
+3.1.5. IMAGE GALLERIES
+
+
 4. CREDITS
 
 Special thanks to Linus Torvalds for creating git. It helped me a lot.
 Thanks to the people over there at nanoblogger.
-Thanks to stefan-k for giving me the hint with the LaTeX-integration :).
+Thanks to stefan-k for giving me the hint with the LaTeX- and gnuplot-integration :).
 
 4.1. LICENSE
 
