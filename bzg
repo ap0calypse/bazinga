@@ -5,6 +5,7 @@ use File::Copy;
 use Storable;
 use Env qw(HOME USERNAME);
 use v5.10;
+use Data::Dumper;
 
 # project:      bazinga
 # description:  free special blogging tool, inspired by nanoblogger
@@ -21,7 +22,7 @@ my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
 my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
 my %CONF_HASH;
-
+my %TAG_HASH;
 
 ################################################################################
 # %needed_params are the paramaters that should be given in the content files
@@ -394,6 +395,7 @@ sub replace_content {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub update_bazinga {
+    generate_tagpages();
     if (-e $CSS) {
         copy($CSS, "$CONF_HASH{'blog_directory'}/css/style.css") or die "copy of css failed: $!\n";
     }
@@ -440,17 +442,42 @@ sub generate_file {
         }
         if ($line =~ m/\[MENU\]/gmx) {
             $line =~ s/\[MENU\]//gmx;
-            $line = "<ul>\n";
             for (sort keys %{$BZG_HASH}) {
                 next if ($_ eq 'comments');
-                $line .= "<li>$_</li>\n";
+                $line .= "<div class='menupoint'>$_</div>\n";
+                if ($_ eq 'articles') {
+                    $line .= "<ul>\n";
+                    for my $tags (sort keys %TAG_HASH) {
+                        $line .= "<li>$tags (" . scalar @{$TAG_HASH{$tags}} . ")</li>\n";
+                    }
+                    $line .= "</ul>\n";
+                }
+                elsif ($_ eq 'pages') {
+                    $line .= "<ul>\n";
+                    for my $pageid (keys $BZG_HASH->{'pages'}) {
+                        $line .= "<li><a href='../../pages/$pageid/index.html'>" . 
+                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
+                    }
+                    $line .= "</ul>\n";
+                }
             }
-            $line .= "</ul>\n";
         }
         if ($line =~ m/\[CONTENT\]/gmx) {
             $line =~ s/\[CONTENT\]//gmx;
             $line .= "<h2>$BZG_HASH->{$type}{$id}{'title'}</h2>";
             $line .= convert_text($BZG_HASH->{$type}{$id}{'text'}, $id);
+            if ($type eq 'articles') {
+            $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{$type}{$id}{'author'} . 
+                     " in " . $BZG_HASH->{$type}{$id}{'tags'} . " on " .
+                     $BZG_HASH->{$type}{$id}{'date'} . " " . $BZG_HASH->{$type}{$id}{'time'} .
+                     "</div>";
+            }
+            elsif ($type eq 'pages') {
+            $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{$type}{$id}{'author'} . 
+                     " on " .
+                     $BZG_HASH->{$type}{$id}{'date'} . " " . $BZG_HASH->{$type}{$id}{'time'} .
+                     "</div>";
+            }
         }
 
         print $INDEX $line;
@@ -489,12 +516,25 @@ sub generate_index {
         }
         if ($line =~ m/\[MENU\]/gmx) {
             $line =~ s/\[MENU\]//gmx;
-            $line = "<ul>\n";
             for (sort keys %{$BZG_HASH}) {
                 next if ($_ eq 'comments');
-                $line .= "<li>$_</li>\n";
+                $line .= "<div class='menupoint'>$_</div>\n";
+                if ($_ eq 'articles') {
+                    $line .= "<ul>\n";
+                    for my $tags (sort keys %TAG_HASH) {
+                        $line .= "<li>$tags (" . scalar @{$TAG_HASH{$tags}} . ")</li>\n";
+                    }
+                    $line .= "</ul>\n";
+                }
+                elsif ($_ eq 'pages') {
+                    $line .= "<ul>\n";
+                    for my $pageid (keys $BZG_HASH->{'pages'}) {
+                        $line .= "<li><a href='./pages/$pageid/index.html'>" . 
+                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
+                    }
+                    $line .= "</ul>\n";
+                }
             }
-            $line .= "</ul>\n";
         }
         if ($line =~ m/\[CONTENT\]/gmx) {
             $line =~ s/\[CONTENT\]//gmx;
@@ -505,6 +545,10 @@ sub generate_index {
                 for my $id (@{$date_hash{$_}}) {
                     $line .= "<h2><a href='./articles/$id/index.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
                     $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'}, $id, "index");
+                    $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{'articles'}{$id}{'author'} . 
+                             " in " . $BZG_HASH->{'articles'}{$id}{'tags'} . " on " .
+                             $BZG_HASH->{'articles'}{$id}{'date'} . " " . $BZG_HASH->{'articles'}{$id}{'time'} .
+                             "</div>";
                 }
             }
         }
@@ -516,7 +560,13 @@ sub generate_index {
 }
 
 
-
+sub generate_tagpages {
+    for my $artid (keys $BZG_HASH->{'articles'}) {
+        for (split / /, $BZG_HASH->{'articles'}{$artid}{'tags'}) {
+            push @{$TAG_HASH{$_}}, $artid;
+        }
+    }
+}
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -623,11 +673,7 @@ sub convert_text {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $_.tex &> /dev/null");
-<<<<<<< HEAD
         system("dvipng $_.dvi -bg 'Transparent' -D 200 -O .1in " .
-=======
-        system("dvipng $_.dvi -bg 'Transparent' -D 250 -O .1in " .
->>>>>>> dbaac73d835444091136ad7ae7c862a334271e6b
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png &> /dev/null");
         unlink("$_.tex", "$_.aux", "$_.dvi", "$_.log");
     }
