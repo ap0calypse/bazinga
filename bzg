@@ -623,7 +623,11 @@ sub convert_text {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $_.tex &> /dev/null");
+<<<<<<< HEAD
         system("dvipng $_.dvi -bg 'Transparent' -D 200 -O .1in " .
+=======
+        system("dvipng $_.dvi -bg 'Transparent' -D 250 -O .1in " .
+>>>>>>> dbaac73d835444091136ad7ae7c862a334271e6b
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png &> /dev/null");
         unlink("$_.tex", "$_.aux", "$_.dvi", "$_.log");
     }
