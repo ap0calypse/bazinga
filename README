@@ -11,8 +11,7 @@ README file for bazinga 0.1a
 3.1.1. . Text Formating
 3.1.2. . LaTeX-insertion
 3.1.3. . Gnuplot-insertion
-3.1.4. . Image-insertion
-3.1.5. . Image Galeries
+3.1.4. . Code-insertion
 3.2. ... Usage Scenarios
 4. ..... Credits
 4.1. ... License
@@ -120,9 +119,7 @@ bazinga comes with some predefined keywords, which can be inserted in any articl
 
 3.1.1. TEXT FORMATING
 
-[b]text[/b] will produce bold text, [i]text[/i] will produce italic text, [u]text[/u] will
-produce underlined text. Newline breaks will be automatically converted to <br />.
-
+Just use simple HTML formatting rules like <b>, <br />, <i>, ...
 
 3.1.2. LATEX-INSERTION
 
@@ -140,18 +137,23 @@ With gnuplot formulae it is the same as with LaTeX. You just enter the wanted th
 GNUPLOT_START and GNUPLOT_END.
 
 
-3.1.4. IMAGE-INSERTION
+3.1.4. CODE-INSERTION
 
-If you specify a valid path to an image between IMAGE_START and IMAGE_END, bazinga will
-automatically insert the picture instead.
+To insert code, you can either use <code>text</code> or use the bazinga-style with the CODE-segment.
+To illustrate this, here is an example:
 
+CODE_START=perl=ln
+print "hello world\n";
+CODE_END
 
-3.1.5. IMAGE GALLERIES
+This prints a formatted colorful hello world with line-numbers (ln). The first argument after the '='
+has to be a valid programming language parseable by highlight (http://www.andre-simon.de/doku/highlight/highlight_langs.html).
 
-If you want to insert many pictures at once and don't want to use the IMAGE_START-IMAGE_END method,
-you can also use the GALLERY_START-GALLERY_END-method. Basically it works the same, except
-that bazinga uses the pictures you specify and creates a gallery with thumbnails pointing
-to the original images. bazinga automatically does the dirty work for you.
+CODE_START=C
+printf("hello world\n");
+CODE_END
+
+This prints a colorful hello world in c.
 
 
 4. CREDITS
