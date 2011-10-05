@@ -532,6 +532,10 @@ sub convert_text {
     my $text = shift;
     my $art_id = shift;
     my $is_index = shift;
+    my $code_text;
+    my $code_lang;
+    my $want_ln;
+    my $line_number = 0;
     $text =~ s/\r//gmx;
     $text =~ s/\n/<br \/>\n/;
     my ($in_code, $in_latex, $in_gnuplot, $in_image) = (0,0,0,0);
@@ -581,14 +585,22 @@ sub convert_text {
             close $GNUPLOTFD;
             next;
         }
-        if (m/CODE_START/) {
+        if (m/CODE_START=([[:alnum:]]+)=?(ln|LN)?/) {
             $in_code = 1;
-            $finaltext .= "<div class='code'>\n";
+            $line_number = 1;
+            $code_lang = lc $1;
+            if (defined $2 and $2 =~ m/ln|LN/) {
+                $want_ln = 1;
+            }
+            else {
+                $want_ln = 0;
+            }
+            $finaltext .= "<pre class='sourcecode'>\n";
             next;
         }
         if (m/CODE_END/) {
             $in_code = 0;
-            $finaltext .= "</div>\n";
+            $finaltext .= "</pre>\n";
             next;
         }
 
@@ -596,18 +608,14 @@ sub convert_text {
             print $LATEXFD $_ . "\n";
         }
         elsif ($in_code) {
-            $finaltext .= "$_ <br />";
+            $finaltext .= `echo '$_' | highlight -s 'vampire' -I -f -l -m $line_number --inline-css -S perl` if $want_ln;
+            $finaltext .= `echo '$_' | highlight -s 'vampire' -I -f --inline-css -S perl` unless $want_ln;
+            $line_number++;
         }
         elsif ($in_gnuplot) {
             print $GNUPLOTFD $_ . "\n";
         }
         else {
-            s/\[b\]/<b>/;
-            s/\[i\]/<i>/;
-            s/\[u\]/<u>/;
-            s/\[\/b\]/<\/b>/;
-            s/\[\/i\]/<\/i>/;
-            s/\[\/u\]/<\/u>/;
             $finaltext .= $_;
         }
     }
@@ -615,7 +623,7 @@ sub convert_text {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $_.tex &> /dev/null");
-        system("dvipng $_.dvi -bg 'Transparent' -D 130 -O .1in " .
+        system("dvipng $_.dvi -bg 'Transparent' -D 250 -O .1in " .
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png &> /dev/null");
         unlink("$_.tex", "$_.aux", "$_.dvi", "$_.log");
     }
@@ -626,6 +634,7 @@ sub convert_text {
         system("convert -scale 400x300 $_-plot.png $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-plot.png");
         unlink("$_.plot", "$_-plot.png");
     }
+
     return $finaltext;
 }
 
