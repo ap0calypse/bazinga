@@ -79,6 +79,15 @@ while (<$CONFFD>) {
     if (m/.*BLOG_WEBSITE: *\"(.+)\".*/) {
         $CONF_HASH{'blog_website'} = $1;
     }
+    if (m/.*LATEX_FGCOLOR: *\"(.+)\".*/) {
+        $CONF_HASH{'latex_fgcolor'} = $1;
+    }
+    if (m/.*LATEX_BGCOLOR: *\"(.+)\".*/) {
+        $CONF_HASH{'latex_bgcolor'} = $1;
+    }
+    if (m/.*LATEX_DPI: *\"(.+)\".*/) {
+        $CONF_HASH{'latex_dpi'} = $1;
+    }
 }
 close $CONFFD;
 
@@ -673,7 +682,8 @@ sub convert_text {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("texi2dvi -q $_.tex &> /dev/null");
-        system("dvipng $_.dvi -bg 'Transparent' -D 200 -O .1in " .
+        system("dvipng $_.dvi -bg \'$CONF_HASH{'latex_bgcolor'}\' -D $CONF_HASH{'latex_dpi'} " .
+               "-fg \'$CONF_HASH{'latex_fgcolor'}\' -O .1in " .
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png &> /dev/null");
         unlink("$_.tex", "$_.aux", "$_.dvi", "$_.log");
     }

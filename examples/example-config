@@ -1,21 +1,20 @@
 # bazinga configuration file
 
 # user identification
-BLOG_OWNER: "John Doe"
-BLOG_EMAIL: "john@doe.com"
-BLOG_WEBSITE: "http://www.doe.com"
+BLOG_OWNER: "ap0calypse"
+BLOG_EMAIL: "ap0calypse@agitatio.org"
+BLOG_WEBSITE: "http://ap0calypse.agitatio.org"
 
 # directory where the local bazinga structure is created
-BLOG_DIRECTORY: "/tmp/blog"
+BLOG_DIRECTORY: "/home/ap0calypse/blog"
 
 # blog title
-BLOG_TITLE: "my blog"
+BLOG_TITLE: "/home/ap0calypse"
 
 # blog subtitle
-BLOG_SUBTITLE: "super interesting, really!"
+BLOG_SUBTITLE: "yet another blog"
 
 # blog look and feel
-# 1: menu left, body middle
-# 2: menu right, body middle
-BLOG_DESIGN: "1"
-
+LATEX_FGCOLOR: "rgb 1.0 1.0 1.0"
+LATEX_BGCOLOR: "Transparent"
+LATEX_DPI: "150"
