@@ -575,6 +575,11 @@ sub generate_tagpages {
             push @{$TAG_HASH{$_}}, $artid;
         }
     }
+    system("rm -rf " .  $CONF_HASH{'blog_directory'} . "/tags/ 2> /dev/null");
+    for (keys %TAG_HASH) {
+        mkdir $CONF_HASH{'blog_directory'} . "/tags/" unless -d $CONF_HASH{'blog_directory'} . "/tags/";
+        mkdir $CONF_HASH{'blog_directory'} . "/tags/$_" unless -d $CONF_HASH{'blog_directory'} . "/tags/$_";
+    }
 }
 
 
