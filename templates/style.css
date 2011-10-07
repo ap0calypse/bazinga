@@ -5,6 +5,16 @@ body {
     color: #ddd;
 }
 
+a, a:active, a:visited {
+    color: #fff;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #fb0;
+    text-decoration: none;
+}
+
 div.heading {
     padding: 10px;
     margin-left: auto;

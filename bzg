@@ -434,7 +434,7 @@ sub generate_file {
     my $templatefile = "./templates/index.template";
     mkdir ($CONF_HASH{'blog_directory'} . "/$type");
     mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id");
-    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id/img");
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id/img") unless $type eq "tags";
     my $indexfile = $CONF_HASH{'blog_directory'} . "/$type/$id/index.html";
     open my $TEMPLATE, "< $templatefile" or die "$!";
     open my $INDEX, "> $indexfile" or die "$!";
@@ -451,13 +451,17 @@ sub generate_file {
         }
         if ($line =~ m/\[MENU\]/gmx) {
             $line =~ s/\[MENU\]//gmx;
+            $line .= "<div class='menupoint'><a href='../../index.html'>" .
+                     "main page</a></div><br />\n";
             for (sort keys %{$BZG_HASH}) {
                 next if ($_ eq 'comments');
                 $line .= "<div class='menupoint'>$_</div>\n";
                 if ($_ eq 'articles') {
                     $line .= "<ul>\n";
                     for my $tags (sort keys %TAG_HASH) {
-                        $line .= "<li>$tags (" . scalar @{$TAG_HASH{$tags}} . ")</li>\n";
+                        $line .= "<li><a href='../../tags/$tags/index.html'>" .
+                                 $tags . "</a><div style='float: right;'>( " . scalar @{$TAG_HASH{$tags}} . 
+                                 " )</div></li>\n";
                     }
                     $line .= "</ul>\n";
                 }
@@ -472,9 +476,22 @@ sub generate_file {
             }
         }
         if ($line =~ m/\[CONTENT\]/gmx) {
-            $line =~ s/\[CONTENT\]//gmx;
-            $line .= "<h2>$BZG_HASH->{$type}{$id}{'title'}</h2>";
-            $line .= convert_text($BZG_HASH->{$type}{$id}{'text'}, $id);
+            if ($type ne "tags") {
+                $line =~ s/\[CONTENT\]//gmx;
+                $line .= "<h2>$BZG_HASH->{$type}{$id}{'title'}</h2>";
+                $line .= convert_text($BZG_HASH->{$type}{$id}{'text'}, $id);
+            }
+            else {
+                $line =~ s/\[CONTENT\]//gmx;
+                $line .= "<h2>Articles with tag: $id</h2>";
+                for (@{$TAG_HASH{$id}}) {
+                    $line .= "<p>(" . $BZG_HASH->{'articles'}{$_}{'date'} . 
+                             " - " . $BZG_HASH->{'articles'}{$_}{'time'} . 
+                             ") : <a href='../../articles/$_/index.html'>" . 
+                             $BZG_HASH->{'articles'}{$_}{'title'} .
+                             "</a></p>";
+                }
+            }
             if ($type eq 'articles') {
             $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{$type}{$id}{'author'} . 
                      " in " . $BZG_HASH->{$type}{$id}{'tags'} . " on " .
@@ -525,13 +542,17 @@ sub generate_index {
         }
         if ($line =~ m/\[MENU\]/gmx) {
             $line =~ s/\[MENU\]//gmx;
+            $line .= "<div class='menupoint'><a href='./index.html'>" .
+                     "main page</a></div><br />\n";
             for (sort keys %{$BZG_HASH}) {
                 next if ($_ eq 'comments');
                 $line .= "<div class='menupoint'>$_</div>\n";
                 if ($_ eq 'articles') {
                     $line .= "<ul>\n";
                     for my $tags (sort keys %TAG_HASH) {
-                        $line .= "<li>$tags (" . scalar @{$TAG_HASH{$tags}} . ")</li>\n";
+                        $line .= "<li><a href='./tags/$tags/index.html'>" .
+                                 $tags . "</a><div style='float: right;'>( " . scalar @{$TAG_HASH{$tags}} . 
+                                 " )</div></li>\n";
                     }
                     $line .= "</ul>\n";
                 }
@@ -577,8 +598,11 @@ sub generate_tagpages {
     }
     system("rm -rf " .  $CONF_HASH{'blog_directory'} . "/tags/ 2> /dev/null");
     for (keys %TAG_HASH) {
-        mkdir $CONF_HASH{'blog_directory'} . "/tags/" unless -d $CONF_HASH{'blog_directory'} . "/tags/";
-        mkdir $CONF_HASH{'blog_directory'} . "/tags/$_" unless -d $CONF_HASH{'blog_directory'} . "/tags/$_";
+        mkdir $CONF_HASH{'blog_directory'} . "/tags/" 
+        unless -d $CONF_HASH{'blog_directory'} . "/tags/";
+        mkdir $CONF_HASH{'blog_directory'} . "/tags/$_" 
+        unless -d $CONF_HASH{'blog_directory'} . "/tags/$_";
+        generate_file("tags", $_);
     }
 }
 
