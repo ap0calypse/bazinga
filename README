@@ -4,8 +4,9 @@ README file for bazinga 0.1a
 1.1. ... Why is it better than XYZ?
 1.2. ... Name
 2. ..... Setup
-2.1. ... Configuration
-2.2. ... Directory Structure
+2.1. ... Prerequisites
+2.2. ... Configuration
+2.3. ... Directory Structure
 3. ..... Features
 3.1. ... Keywords
 3.1.1. . Text Formating
@@ -60,8 +61,22 @@ or equally symlinked to this location. Some sample configuration files can be fo
 conf/ directory. All the data will be stored in a file called "~/.bazinga/bazinga.dat". It
 is a perlish stored variable and won't be easy to read. It can be backed up whenever you want.
 
+2.1 PREREQUISITES
 
-2.1. CONFIGURATION
+bazinga depends on some other programs to run. Be sure to have them installed before
+you complain about problems which could have been avoided by reading the README ;).
+Here is a list of the prerequisites:
+
+    - highlight (needed for syntax highlighting feature)
+    - dvipng (provided by texlive-bin)
+    - texi2dvi (provided by texinfo package)
+    - gnuplot
+    - convert (provided by ImageMagick)
+
+For perfect user experience I recommend installing all these packages.
+
+
+2.2. CONFIGURATION
 
 The easiest way to get everything started is to copy one of the example configurations
 from the conf/ directory to ~/.bazinga/bazinga.conf and edit it to fit your needs. 
@@ -71,7 +86,7 @@ There is also a style.css which should be put in your .bazinga-directory. You ca
 to whatever you want. bzg will then use this css to pimp your blog.
 
 
-2.2. DIRECTORY STRUCTURE
+2.3. DIRECTORY STRUCTURE
 
 Once you edited your bazinga.conf with the needed information and you added an article or page,
 you can update your blog structure with "bzg update". This will create the following similar structure:
@@ -154,6 +169,33 @@ printf("hello world\n");
 CODE_END
 
 This prints a colorful hello world in c.
+
+3.2. USAGE SCENARIOS
+
+Because it is always quite helpful to give some examples, I will provide
+some everyday scenarios. You can also receive some information with "bzg help".
+
+For example, we want to add a new article based on a template:
+
+    # generate an article template
+    
+    $ bzg generate article > ~/first_article
+    
+    # now we edit the article with the editor of choice.
+    # after editing, we add the article.
+
+    $ bzg add ~/first_article
+
+    content file seems to be correct.
+    added '34bef54af31dc32b' to articles.
+
+    # so far it seemed to work, now we have to make an update
+
+    $ bzg update
+
+    # after that, you should have the complete blog up and ready in
+    # the directory you specified in your config.
+
 
 
 4. CREDITS
