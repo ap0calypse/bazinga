@@ -600,7 +600,6 @@ sub convert_text {
     my ($code_text, $code_lang, $want_ln, $line_number, $in_code, $in_latex, $in_gnuplot, $latex_present, $gnuplot_present) = 
        (0, 0, 0, 0, 0, 0, 0, 0, 0);
     $text =~ s/\r//gmx;
-    $text =~ s/\n/<br \/>\n/;
     my ($LATEXFD, $GNUPLOTFD, $IMAGEFD);
     my @textlines = split /\n/, $text;
     my $finaltext;
