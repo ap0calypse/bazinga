@@ -5,12 +5,11 @@ use File::Copy;
 use Storable;
 use Env qw(HOME USERNAME);
 use v5.10;
-use Data::Dumper;
 
 # project:      bazinga
 # description:  free special blogging tool, inspired by nanoblogger
 # author:       Manuel Fill (ap0calypse@agitatio.org)
-# license:      
+# license:      GPL 
 
 
 ################################################################################
@@ -31,7 +30,6 @@ my %TAG_HASH;
 my %needed_params = (
     'articles'   => [qw(author title email website text date time tags)],
     'pages'      => [qw(author title email website text date time)],
-    'comments'   => [qw(author email website text date time to_article)],
 );
 
 
@@ -61,7 +59,6 @@ while (<$CONFFD>) {
         mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'};
         mkdir "$CONF_HASH{'blog_directory'}/pages" unless -e "$CONF_HASH{'blog_directory'}/pages";
         mkdir "$CONF_HASH{'blog_directory'}/articles" unless -e "$CONF_HASH{'blog_directory'}/articles";
-        mkdir "$CONF_HASH{'blog_directory'}/comments" unless -e "$CONF_HASH{'blog_directory'}/comments";
         mkdir "$CONF_HASH{'blog_directory'}/css" unless -e "$CONF_HASH{'blog_directory'}/css";
     }
     if (m/.*BLOG_TITLE: *\"(.+)\".*/) {
@@ -215,7 +212,7 @@ sub print_usage {
     quick overview:
     
         bzg help
-        bzg generate (article | comment | page)
+        bzg generate (article | page)
         bzg add FILE
         bzg delete ID
         bzg replace ID FILE
@@ -226,9 +223,9 @@ sub print_usage {
     examples:
 
         bzg generate article > my_template_article.txt
+        bzg generate page > my_template_page.txt
         bzg add my_fancy_new_article.txt
         bzg add about_me_page.txt
-        bzg add comment_from_some_dude.txt
         bzg replace 6783423 corrected_article.txt
         bzg check maybe_corrupt_article.txt
         bzg update
@@ -262,13 +259,6 @@ sub list_contents {
         print " $BZG_HASH->{'pages'}{$_}{'time'}\n";
     }
     print "\n\n";
-    print "Comments:\n" . "* " x 20 . "\n";
-    for (keys %{$BZG_HASH->{'comments'}}) {
-        print " $_ (-> $BZG_HASH->{'comments'}{$_}{'to_article'})";
-        print " from: $BZG_HASH->{'comments'}{$_}{'author'} - $BZG_HASH->{'comments'}{$_}{'date'}";
-        print " $BZG_HASH->{'comments'}{$_}{'time'}\n";
-    }
-    print "\n\n";
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -292,7 +282,7 @@ sub add_content {
     }
     open my $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
     while (<$CONTFD>) {
-        $BZG_HASH->{$1}{$random} = {} and $type = $1 and last if m/^category: *\"(articles|comments|pages){1}\".*$/;
+        $BZG_HASH->{$1}{$random} = {} and $type = $1 and last if m/^category: *\"(articles|pages){1}\".*$/;
     }
     close $CONTFD;
     unless ($type) {
@@ -313,9 +303,6 @@ sub add_content {
             print "argument '$list_item' is missing in content-file, exiting.\n";
             $correct = 0;
         }
-    }
-    if ($type eq 'comments') {
-        $correct = 0 unless exists $BZG_HASH->{'articles'}{$BZG_HASH->{$type}{$random}{'to_article'}};
     }
     if ($correct) {
         print "content file seems to be correct.\n";
@@ -356,14 +343,6 @@ sub delete_content {
             if ($key eq $delete_id) {
                 delete $BZG_HASH->{'articles'}{$key};
                 print "deleted article '$key'\n";
-            }
-        }
-    }
-    if (exists $BZG_HASH->{'comments'}) {
-        for $key (keys %{$BZG_HASH->{'comments'}}) {
-            if ($key eq $delete_id) {
-                delete $BZG_HASH->{'comments'}{$key};
-                print "deleted comment '$key'\n";
             }
         }
     }
@@ -454,7 +433,6 @@ sub generate_file {
             $line .= "<div class='menupoint'><a href='../../index.html'>" .
                      "main page</a></div><br />\n";
             for (sort keys %{$BZG_HASH}) {
-                next if ($_ eq 'comments');
                 $line .= "<div class='menupoint'>$_</div>\n";
                 if ($_ eq 'articles') {
                     $line .= "<ul>\n";
@@ -545,7 +523,6 @@ sub generate_index {
             $line .= "<div class='menupoint'><a href='./index.html'>" .
                      "main page</a></div><br />\n";
             for (sort keys %{$BZG_HASH}) {
-                next if ($_ eq 'comments');
                 $line .= "<div class='menupoint'>$_</div>\n";
                 if ($_ eq 'articles') {
                     $line .= "<ul>\n";
@@ -620,15 +597,11 @@ sub convert_text {
     my $text = shift;
     my $art_id = shift;
     my $is_index = shift;
-    my $code_text;
-    my $code_lang;
-    my $want_ln;
-    my $line_number = 0;
+    my ($code_text, $code_lang, $want_ln, $line_number, $in_code, $in_latex, $in_gnuplot, $latex_present, $gnuplot_present) = 
+       (0, 0, 0, 0, 0, 0, 0, 0, 0);
     $text =~ s/\r//gmx;
     $text =~ s/\n/<br \/>\n/;
-    my ($in_code, $in_latex, $in_gnuplot, $in_image) = (0,0,0,0);
     my ($LATEXFD, $GNUPLOTFD, $IMAGEFD);
-    my ($latex_present, $gnuplot_present, $image_present) = (0, 0, 0);
     my @textlines = split /\n/, $text;
     my $finaltext;
     for (@textlines) {
@@ -743,7 +716,6 @@ sub convert_text {
 sub make_template {
     my $type = shift;
     $type = "articles" if $type eq "article";
-    $type = "comments" if $type eq "comment";
     $type = "pages" if $type eq "page";
     my $date = sprintf("%d-%02d-%02d", (localtime)[5] + 1900, (localtime)[4] + 1, (localtime)[3]);
     my $time = sprintf("%02d:%02d", (localtime)[2], (localtime)[1]);
@@ -758,21 +730,6 @@ email: "$CONF_HASH{"blog_email"}"
 date: "$date"
 time: "$time"
 tags: ""
-START_TEXT
-
-END_TEXT
-
-EOTEMP
-    }
-    elsif ($type eq "comments") {
-        print <<"EOTEMP";
-category: "$type"
-to_article: ""
-author: ""
-website: ""
-email: ""
-date: ""
-time: ""
 START_TEXT
 
 END_TEXT
