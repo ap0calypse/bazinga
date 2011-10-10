@@ -16,7 +16,7 @@ use v5.10;
 # version info, config locations, ...
 ################################################################################
 
-my $VERSION = "0.1a";
+my $VERSION = "0.1";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
 my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
@@ -110,11 +110,11 @@ if ($ARGV[0]) {
     }
     elsif ($ARGV[0] eq "generate") {
         if ($ARGV[1]) {
-            if ($ARGV[1] =~ m/(page|article|comment){1}/) {
+            if ($ARGV[1] =~ m/(page|article){1}/) {
                 make_template($1);
             }
             else {
-                print "second argument must be 'article', 'comment' or 'page'.\n";
+                print "second argument must be 'article' or 'page'.\n";
             }
         }
     }
@@ -263,7 +263,7 @@ sub list_contents {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: add_content
-# needs:    1 or 0 (only check), path to content file, (maybe ID, only if called from replace_content
+# needs:    1 or 0 (only check), path to content file, (maybe ID, only if called from replace_content)
 # returns:  nothing
 # calls:    nothing
 # purpose:  processes the content file and fills the super hash with the content information
@@ -321,7 +321,7 @@ sub add_content {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: delete content
-# needs:    valid id from a page / article / comment
+# needs:    valid id from a page / article
 # returns:  nothing
 # calls:    nothing
 # purpose:  deletes any content and the corresponding id from the index
@@ -355,7 +355,7 @@ sub delete_content {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: replace_content
-# needs:    valid id from a page / article / comment, and path to a new content file
+# needs:    valid id from a page / article, and path to a new content file
 # returns:  nothing
 # calls:    add_content, delete_content
 # purpose:  deletes any content and the corresponding id from the index and adds a new one
@@ -376,8 +376,8 @@ sub replace_content {
 # needs:    nothing
 # returns:  nothing
 # calls:    generate_file, generate_index
-# purpose:  copies an existing css file from the users home dir to the structure or dies if there
-#           is no such css. after that it loops through the sections and then through the ids
+# purpose:  copies an existing css file from the users home dir to the structure or dies if the
+#           copy-prrocess fails. after that it loops through the sections and then through the ids
 #           and passes them to generate_file for further processing. in the end, the index is
 #           (re)generated.
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -401,11 +401,12 @@ sub update_bazinga {
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: generate_file
-# needs:    category (articles/comments/pages) and the ID
+# needs:    category (articles/pages/tags) and the ID (which could be a tagname too)
 # returns:  nothing
 # calls:    convert_text
 # purpose:  uses the index-template to generate a website for an article or a page. additionally,
-#           it creates the needed directory-structure.
+#           it creates the needed directory-structure. tag-pages were added after initial 
+#           implementation, but fit in here quite nicely. :)
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub generate_file {
@@ -417,7 +418,6 @@ sub generate_file {
     my $indexfile = $CONF_HASH{'blog_directory'} . "/$type/$id/index.html";
     open my $TEMPLATE, "< $templatefile" or die "$!";
     open my $INDEX, "> $indexfile" or die "$!";
-    my %date_hash;
     while (my $line = <$TEMPLATE>) {
         if ($line =~ m/\[BLOG_TITLE\]/gmx) {
             $line =~ s/\[BLOG_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
@@ -608,10 +608,7 @@ sub convert_text {
             $latex_present++;
             $in_latex = 1;
             open $LATEXFD, "> $latex_present.tex";
-            print $LATEXFD "\\begin{document}\n";
-            print $LATEXFD "\\documentclass{article}\n";
-            print $LATEXFD "\\pagestyle{empty}\n";
-            print $LATEXFD "\\begin{document}\n";
+            print $LATEXFD "\\begin{document}\n" . "\\documentclass{article}\n" .  "\\pagestyle{empty}\n";
             if ($is_index) {
                 $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
             }
@@ -630,8 +627,7 @@ sub convert_text {
             $gnuplot_present++;
             $in_gnuplot = 1;
             open $GNUPLOTFD, "> $gnuplot_present.plot";
-            print $GNUPLOTFD "set terminal png\n";
-            print $GNUPLOTFD "set output '$gnuplot_present-plot.png'\n";
+            print $GNUPLOTFD "set terminal png\n" . "set output '$gnuplot_present-plot.png'\n";
             if ($is_index) {
                 $finaltext .= "<br /><img src='./articles/$art_id/img/$gnuplot_present-plot.png' alt='$gnuplot_present' /><br />\n";
             }
@@ -646,8 +642,7 @@ sub convert_text {
             next;
         }
         if (m/CODE_START=([[:alnum:]]+)=?(ln|LN)?/) {
-            $in_code = 1;
-            $line_number = 1;
+            ($in_code, $line_number) = (1, 1);
             $code_lang = lc $1;
             if (defined $2 and $2 =~ m/ln|LN/) {
                 $want_ln = 1;
