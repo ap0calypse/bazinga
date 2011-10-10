@@ -8,11 +8,17 @@ time: "12:00"
 tags: "main programming perl"
 
 START_TEXT
-This is my first article published with bazinga. It will show you some features now:
+<p>This is my first article published with bazinga. It will show you some features now:</p>
 
-[b]bold text[/b] is as easy to write as [u]underlined text[/u]. [i]italic text[/i] too, of course.
+<p>If you want to insert a code snipped, bazinga has a special feature for that:</p>
 
-If you want to insert a code snipped, bazinga has a special feature for that:
+CODE_START=perl
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+my $answer = 42;
+CODE_END
 
 LATEX_START
 \mathcal B}(t\bar{t} \rightarrow W b Z c) = 
@@ -62,7 +68,7 @@ set samples 50
 plot [-10:10] sin(x),atan(x),cos(atan(x))
 GNUPLOT_END
 
-CODE_START
+CODE_START=perl=ln
 #!/usr/bin/perl
 use strict;
 
@@ -70,22 +76,12 @@ print "hello world\n .... BAZINGA!\n";
 CODE_END
 
 
-CODE_START
+CODE_START=bash=ln
 #!/bin/bash
 
 echo "hello world\n .... BAZINGA!";
 CODE_END
 
-text
-
-IMAGE_START
-/tmp/example-pic.png
-IMAGE_END
-
-GALLERY_START
-/tmp/example-pic.png
-/tmp/example-pic.png
-/tmp/example-pic.png
-GALLERY_END
+<b>bold text</b>
 
 END_TEXT
