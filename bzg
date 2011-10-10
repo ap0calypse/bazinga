@@ -383,8 +383,10 @@ sub replace_content {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub update_bazinga {
+    system("rm -rf " . $CONF_HASH{'blog_directory'} . "/*");
     generate_tagpages();
     if (-e $CSS) {
+        mkdir($CONF_HASH{'blog_directory'} . "/css");
         copy($CSS, "$CONF_HASH{'blog_directory'}/css/style.css") or die "copy of css failed: $!\n";
     }
     for my $section (keys %{$BZG_HASH}) {
