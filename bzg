@@ -11,6 +11,34 @@ use v5.10;
 # author:       Manuel Fill (ap0calypse@agitatio.org)
 # license:      GPL 
 
+our $TEMPLATE = <<"EOTEMPLATE";
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>[BLOG_TITLE] - [BLOG_SUBTITLE]</title>
+        <link rel="stylesheet" href="[STYLESHEET_LOCATION]"
+              type="text/css" title="Default Style" /
+    </head>
+    <body>
+        <div class='heading'>
+            <h1>[BLOG_TITLE]</h1>
+            <h2>[BLOG_SUBTITLE]</h1>
+        </div>
+        <br />
+        <div class='main'>
+            <div class='menu'>
+                [MENU]
+            </div>
+            <div class='content'>
+                [CONTENT]
+            </div>
+        </div>
+    </body>
+</html>
+EOTEMPLATE
 
 ################################################################################
 # version info, config locations, ...
@@ -413,14 +441,12 @@ sub update_bazinga {
 
 sub generate_file {
     my ($type, $id) = @_;
-    my $templatefile = "./templates/index.template";
     mkdir ($CONF_HASH{'blog_directory'} . "/$type");
     mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id");
     mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id/img") unless $type eq "tags";
     my $indexfile = $CONF_HASH{'blog_directory'} . "/$type/$id/index.html";
-    open my $TEMPLATE, "< $templatefile" or die "$!";
     open my $INDEX, "> $indexfile" or die "$!";
-    while (my $line = <$TEMPLATE>) {
+    for my $line (split /\n/, $TEMPLATE) {
         if ($line =~ m/\[BLOG_TITLE\]/gmx) {
             $line =~ s/\[BLOG_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
         }
@@ -428,7 +454,7 @@ sub generate_file {
             $line =~ s/\[BLOG_SUBTITLE\]/$CONF_HASH{'blog_subtitle'}/gmx;
         }
         if ($line =~ m/\[STYLESHEET_LOCATION\]/gmx) {
-            $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/\.\.\/\.\/css\/style.css/gmx;
+            $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/\.\.\/css\/style.css/gmx;
         }
         if ($line =~ m/\[MENU\]/gmx) {
             $line =~ s/\[MENU\]//gmx;
@@ -488,7 +514,6 @@ sub generate_file {
 
         print $INDEX $line;
     }
-    close $TEMPLATE;
     close $INDEX;
 }
 
@@ -505,12 +530,10 @@ sub generate_file {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub generate_index {
-    my $templatefile = "./templates/index.template";
     my $indexfile = $CONF_HASH{'blog_directory'} . "/index.html";
-    open my $TEMPLATE, "< $templatefile" or die "$!";
     open my $INDEX, "> $indexfile" or die "$!";
     my %date_hash;
-    while (my $line = <$TEMPLATE>) {
+    for my $line (split /\n/, $TEMPLATE) {
         if ($line =~ m/\[BLOG_TITLE\]/gmx) {
             $line =~ s/\[BLOG_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
         }
@@ -564,7 +587,6 @@ sub generate_index {
 
         print $INDEX $line;
     }
-    close $TEMPLATE;
     close $INDEX;
 }
 
