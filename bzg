@@ -48,6 +48,7 @@ my $VERSION = "0.1";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
 my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
+my $TMP_LOCATION = "$HOME/.bazinga/temp";
 my %CONF_HASH;
 my %TAG_HASH;
 
@@ -71,7 +72,6 @@ my $BZG_HASH;
 if (-e $BZG_FILE && (stat $BZG_FILE)[7] > 5) {
     $BZG_HASH = retrieve $BZG_FILE;
 }
-
 
 ################################################################################
 # here we parse the config file in the users home directory and fill %CONF_HASH
@@ -123,6 +123,7 @@ close $CONFFD;
 
 die "not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
 die "configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
+mkdir $TMP_LOCATION unless -d $TMP_LOCATION;
 
 
 ################################################################################
@@ -319,10 +320,13 @@ sub add_content {
     }
     open $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
     while (<$CONTFD>) {
-        $BZG_HASH->{$type}{$random}{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
         if (/START_TEXT/ .. /END_TEXT/) {
             $BZG_HASH->{$type}{$random}{'text'} .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
         }
+        else {
+            $BZG_HASH->{$type}{$random}{$1} = $2 and next if m/^(.+): *\"(.+)\".*$/;
+        }
+
     }
     close $CONTFD;
     my $correct = 1;
@@ -631,8 +635,8 @@ sub convert_text {
         if (m/LATEX_START/) {
             $latex_present++;
             $in_latex = 1;
-            open $LATEXFD, "> $latex_present.tex";
-            print $LATEXFD "\\begin{document}\n" . "\\documentclass{article}\n" .  "\\pagestyle{empty}\n";
+            open $LATEXFD, "> $TMP_LOCATION/$latex_present.tex";
+            print $LATEXFD "\\documentclass{article}\n" .  "\\pagestyle{empty}\n" . "\\begin{document}\n";
             if ($is_index) {
                 $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
             }
@@ -650,7 +654,7 @@ sub convert_text {
         if (m/GNUPLOT_START/) {
             $gnuplot_present++;
             $in_gnuplot = 1;
-            open $GNUPLOTFD, "> $gnuplot_present.plot";
+            open $GNUPLOTFD, "> $TMP_LOCATION/$gnuplot_present.plot";
             print $GNUPLOTFD "set terminal png\n" . "set output '$gnuplot_present-plot.png'\n";
             if ($is_index) {
                 $finaltext .= "<br /><img src='./articles/$art_id/img/$gnuplot_present-plot.png' alt='$gnuplot_present' /><br />\n";
@@ -701,18 +705,18 @@ sub convert_text {
     for (1 .. $latex_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("texi2dvi -q $_.tex &> /dev/null");
-        system("dvipng $_.dvi -bg \'$CONF_HASH{'latex_bgcolor'}\' -D $CONF_HASH{'latex_dpi'} " .
-               "-fg \'$CONF_HASH{'latex_fgcolor'}\' -O .1in " .
+        system("cd $TMP_LOCATION; texi2dvi -q $TMP_LOCATION/$_.tex &> /dev/null");
+        system("cd $TMP_LOCATION; dvipng $TMP_LOCATION/$_.dvi -bg \'$CONF_HASH{'latex_bgcolor'}\' -D $CONF_HASH{'latex_dpi'} " .
+               "-fg \'$CONF_HASH{'latex_fgcolor'}\' -O .1in -T tight " .
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png &> /dev/null");
-        unlink("$_.tex", "$_.aux", "$_.dvi", "$_.log");
+        unlink("$TMP_LOCATION/$_.tex", "$TMP_LOCATION/$_.aux", "$TMP_LOCATION/$_.dvi", "$TMP_LOCATION/$_.log");
     }
     for (1 .. $gnuplot_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("gnuplot $_.plot &> /dev/null");
-        system("convert -scale 400x300 $_-plot.png $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-plot.png");
-        unlink("$_.plot", "$_-plot.png");
+        system("cd $TMP_LOCATION; gnuplot $TMP_LOCATION/$_.plot &> /dev/null");
+        system("convert -scale 400x300 $TMP_LOCATION/$_-plot.png $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-plot.png");
+        unlink("$TMP_LOCATION/$_.plot", "$TMP_LOCATION/$_-plot.png");
     }
 
     return $finaltext;
