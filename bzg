@@ -404,6 +404,17 @@ sub delete_content {
 }
 
 
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: tag_article
+# needs:    valid id from an article, string with tags
+# returns:  nothing
+# calls:    nothing
+# purpose:  deletes the tags from a given article and adds new ones
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
 sub tag_article {
     my ($tag_id, $tags) = @_;
     if (exists  $BZG_HASH->{'articles'}{$tag_id}) {
@@ -511,9 +522,12 @@ sub generate_file {
                 }
                 elsif ($_ eq 'pages') {
                     $line .= "<ul>\n";
-                    for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} keys %{$BZG_HASH->{'pages'}}) {
+                    for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} 
+                                        keys %{$BZG_HASH->{'pages'}}) {
+
                         $line .= "<li><a href='../../pages/$pageid/index.html'>" . 
                                  $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
+                    
                     }
                     $line .= "</ul>\n";
                 }
@@ -598,9 +612,12 @@ sub generate_index {
                 }
                 elsif ($_ eq 'pages') {
                     $line .= "<ul>\n";
-                    for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} keys %{$BZG_HASH->{'pages'}}) {
+                    for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} 
+                                        keys %{$BZG_HASH->{'pages'}}) {
+
                         $line .= "<li><a href='./pages/$pageid/index.html'>" . 
                                  $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
+                    
                     }
                     $line .= "</ul>\n";
                 }
@@ -628,6 +645,17 @@ sub generate_index {
     close $INDEX;
 }
 
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: generate_tagpages
+# needs:    nothing
+# returns:  nothing
+# calls:    generate_file
+# purpose:  goes through the content-hash and generates the corresponding pages
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub generate_tagpages {
     for my $artid (keys %{$BZG_HASH->{'articles'}}) {
