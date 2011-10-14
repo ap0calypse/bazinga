@@ -511,7 +511,7 @@ sub generate_file {
                 }
                 elsif ($_ eq 'pages') {
                     $line .= "<ul>\n";
-                    for my $pageid (keys %{$BZG_HASH->{'pages'}}) {
+                    for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} keys %{$BZG_HASH->{'pages'}}) {
                         $line .= "<li><a href='../../pages/$pageid/index.html'>" . 
                                  $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
                     }
@@ -598,7 +598,7 @@ sub generate_index {
                 }
                 elsif ($_ eq 'pages') {
                     $line .= "<ul>\n";
-                    for my $pageid (keys %{$BZG_HASH->{'pages'}}) {
+                    for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} keys %{$BZG_HASH->{'pages'}}) {
                         $line .= "<li><a href='./pages/$pageid/index.html'>" . 
                                  $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
                     }
