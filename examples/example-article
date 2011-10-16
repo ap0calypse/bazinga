@@ -21,9 +21,7 @@ my $answer = 42;
 CODE_END
 
 LATEX_START
-\mathcal B}(t\bar{t} \rightarrow W b Z c) = 
-\frac{ N_\mathrm{candidates} - N_\mathrm{background} }
-{{\mathcal A} \cdot \int {\mathcal L} dt \cdot \sigma_{t \bar{t}}}
+$\sum$
 LATEX_END
 
 GNUPLOT_START
