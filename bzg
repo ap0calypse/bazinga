@@ -743,7 +743,7 @@ sub convert_text {
     for (1 .. $latex_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("cd $TMP_LOCATION; texi2dvi -q $_.tex");
+        system("cd $TMP_LOCATION; texi2dvi -b -q --tidy $_.tex");
         system("cd $TMP_LOCATION; dvipng '$_.dvi' -bg '" . $CONF_HASH{'latex_bgcolor'} . 
                "' -D '" . $CONF_HASH{'latex_dpi'} . "' -fg '" . $CONF_HASH{'latex_fgcolor'} . 
                "' -T tight -o '" . $CONF_HASH{'blog_directory'} . 
