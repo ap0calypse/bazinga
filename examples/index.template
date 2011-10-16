@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+        <title>[BLOG_TITLE] - [BLOG_SUBTITLE]</title>
+        <link rel="stylesheet" href="[STYLESHEET_LOCATION]"
+              type="text/css" title="Default Style" /
+    </head>
+    <body>
+        <div class='heading'>
+            <h1>[BLOG_TITLE]</h1>
+            <h2>[BLOG_SUBTITLE]</h2>
+        </div>
+        <br />
+        <div class='main'>
+            <div class='menu'>
+                [MENU]
+            </div>
+            <div class='content'>
+                [CONTENT]
+            </div>
+        </div>
+    </body>
+</html>
