@@ -674,7 +674,7 @@ sub convert_text {
             $latex_present++;
             $in_latex = 1;
             open $LATEXFD, "> $TMP_LOCATION/$latex_present.tex";
-            print $LATEXFD "\\documentclass{article}\n" .  "\\pagestyle{empty}\n" . "\\begin{document}\n" . "\$\n";
+            print $LATEXFD "\\documentclass{article}\n" .  "\\pagestyle{empty}\n" . "\\begin{document}\n";
             if ($is_index) {
                 $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
             }
@@ -685,7 +685,7 @@ sub convert_text {
         }
         if (m/LATEX_END/) {
             $in_latex = 0;
-            print $LATEXFD "\$\n\\end{document}\n";
+            print $LATEXFD "\n\\end{document}\n";
             close $LATEXFD;
             next;
         }
@@ -747,7 +747,7 @@ sub convert_text {
         system("cd $TMP_LOCATION; dvipng $TMP_LOCATION/$_.dvi -bg \'$CONF_HASH{'latex_bgcolor'}\' -D $CONF_HASH{'latex_dpi'} " .
                "-fg \'$CONF_HASH{'latex_fgcolor'}\' -O .1in -T tight " .
                "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png ");
-        #unlink("$TMP_LOCATION/$_.tex", "$TMP_LOCATION/$_.aux", "$TMP_LOCATION/$_.dvi", "$TMP_LOCATION/$_.log");
+        unlink("$TMP_LOCATION/$_.tex", "$TMP_LOCATION/$_.aux", "$TMP_LOCATION/$_.dvi", "$TMP_LOCATION/$_.log");
     }
     for (1 .. $gnuplot_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
