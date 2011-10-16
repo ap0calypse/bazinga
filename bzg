@@ -418,8 +418,25 @@ sub tag_article {
 
 sub replace_content {
     my ($id, $path) = @_;
+    my $full_id;
+    for (keys $BZG_HASH->{'pages'}) {
+        if ($_ =~ m/^$id.*/) {
+            $full_id = $_;
+        }
+    }
+    for (keys $BZG_HASH->{'articles'}) {
+        if ($_ =~ m/^$id.*/) {
+            $full_id = $_;
+        }
+    }
     delete_content($id);
-    add_content(1, $path, $id);
+    if ($full_id) {
+        add_content(1, $path, $full_id);
+    }
+    else {
+        print "content with id $id doesn't exist, please check.\n";
+        exit 5;
+    }
 }
 
 
