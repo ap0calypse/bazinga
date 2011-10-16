@@ -744,7 +744,7 @@ sub convert_text {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         `cd $TMP_LOCATION; texi2dvi -q $_.tex &> /dev/null`;
-        `cd $TMP_LOCATION; dvipng $_.dvi -bg '" . $CONF_HASH{'latex_bgcolor'} . 
+        `"cd $TMP_LOCATION; dvipng $_.dvi -bg '" . $CONF_HASH{'latex_bgcolor'} . 
                "' -D " . $CONF_HASH{'latex_dpi'} . "-fg '" . $CONF_HASH{'latex_fgcolor'} . 
                "' -O .1in -T tight -o " . $CONF_HASH{'blog_directory'} . 
                "/articles/$art_id/img/$_-latex.png &> /dev/null"`;
@@ -754,7 +754,7 @@ sub convert_text {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         `cd $TMP_LOCATION; gnuplot $_.plot &> /dev/null`;
-        `convert -scale 400x300 $TMP_LOCATION/$_-plot.png " . $CONF_HASH{'blog_directory'} . 
+        `"convert -scale 400x300 $TMP_LOCATION/$_-plot.png " . $CONF_HASH{'blog_directory'} . 
                "/articles/$art_id/img/$_-plot.png"`;
         unlink("$TMP_LOCATION/$_.plot", "$TMP_LOCATION/$_-plot.png");
     }
