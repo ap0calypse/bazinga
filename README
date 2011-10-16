@@ -82,7 +82,7 @@ The easiest way to get everything started is to copy one of the example configur
 from the conf/ directory to ~/.bazinga/bazinga.conf and edit it to fit your needs. 
 Configuration may look Perl'ish (well, because it is), but should be pretty self-explaining.
 
-There is also a style.css which should be put in your .bazinga-directory. You can change it
+There is also a style.css and an index.template which should be put in your .bazinga-directory. You can change it
 to whatever you want. bzg will then use this css to pimp your blog.
 
 
