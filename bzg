@@ -25,7 +25,7 @@ our $TEMPLATE = <<"EOTEMPLATE";
     <body>
         <div class='heading'>
             <h1>[BLOG_TITLE]</h1>
-            <h2>[BLOG_SUBTITLE]</h1>
+            <h2>[BLOG_SUBTITLE]</h2>
         </div>
         <br />
         <div class='main'>
