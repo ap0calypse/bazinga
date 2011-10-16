@@ -744,16 +744,18 @@ sub convert_text {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("cd $TMP_LOCATION; texi2dvi -q $_.tex &> /dev/null");
-        system("cd $TMP_LOCATION; dvipng $_.dvi -bg \'$CONF_HASH{'latex_bgcolor'}\' -D $CONF_HASH{'latex_dpi'} " .
-               "-fg \'$CONF_HASH{'latex_fgcolor'}\' -O .1in -T tight " .
-               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png &> /dev/null");
+        system("cd $TMP_LOCATION; dvipng $_.dvi -bg '" . $CONF_HASH{'latex_bgcolor'} . 
+               "' -D " . $CONF_HASH{'latex_dpi'} . "-fg '" . $CONF_HASH{'latex_fgcolor'} . 
+               "' -O .1in -T tight -o " . $CONF_HASH{'blog_directory'} . 
+               "/articles/$art_id/img/$_-latex.png &> /dev/null");
         unlink("$TMP_LOCATION/$_.tex", "$TMP_LOCATION/$_.aux", "$TMP_LOCATION/$_.dvi", "$TMP_LOCATION/$_.log");
     }
     for (1 .. $gnuplot_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("cd $TMP_LOCATION; gnuplot $_.plot &> /dev/null");
-        system("convert -scale 400x300 $TMP_LOCATION/$_-plot.png $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-plot.png");
+        system("convert -scale 400x300 $TMP_LOCATION/$_-plot.png " . $CONF_HASH{'blog_directory'} . 
+               "/articles/$art_id/img/$_-plot.png");
         unlink("$TMP_LOCATION/$_.plot", "$TMP_LOCATION/$_-plot.png");
     }
 
