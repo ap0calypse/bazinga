@@ -696,7 +696,7 @@ sub convert_text {
         if (m/LATEX_START/) {
             $latex_present++;
             $in_latex = 1;
-            open $LATEXFD, "> $TMP_LOCATION/$latex_present.tex";
+            open $LATEXFD, "> $TMP_LOCATION/$latex_present-pre.tex";
             print $LATEXFD "\\documentclass{article}\n" .  "\\pagestyle{empty}\n" . "\\begin{document}\n";
             if ($is_index) {
                 $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
@@ -715,13 +715,13 @@ sub convert_text {
         if (m/GNUPLOT_START/) {
             $gnuplot_present++;
             $in_gnuplot = 1;
-            open $GNUPLOTFD, "> $TMP_LOCATION/$gnuplot_present.plot";
-            print $GNUPLOTFD "set terminal png\n" . "set output '$gnuplot_present-plot.png'\n";
+            open $GNUPLOTFD, "> $TMP_LOCATION/$gnuplot_present-gnu.plot";
+            print $GNUPLOTFD "set terminal png\n" . "set output '$gnuplot_present-gnu.png'\n";
             if ($is_index) {
-                $finaltext .= "<br /><img src='./articles/$art_id/img/$gnuplot_present-plot.png' alt='$gnuplot_present' /><br />\n";
+                $finaltext .= "<br /><img src='./articles/$art_id/img/$gnuplot_present-gnu.png' alt='$gnuplot_present' /><br />\n";
             }
             else {
-                $finaltext .= "<br /><img src='./img/$gnuplot_present-plot.png' alt='$gnuplot_present' /><br />\n";
+                $finaltext .= "<br /><img src='./img/$gnuplot_present-gnu.png' alt='$gnuplot_present' /><br />\n";
             }
             next;
         }
@@ -766,20 +766,20 @@ sub convert_text {
     for (1 .. $latex_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("cd $TMP_LOCATION; texi2dvi -b -q --tidy $_.tex");
-        system("cd $TMP_LOCATION; dvipng '$_.dvi' -bg '" . $CONF_HASH{'latex_bgcolor'} . 
+        system("cd $TMP_LOCATION; texi2dvi -b -q --tidy $_-pre.tex");
+        system("cd $TMP_LOCATION; dvipng '$_-pre.dvi' -bg '" . $CONF_HASH{'latex_bgcolor'} . 
                "' -D '" . $CONF_HASH{'latex_dpi'} . "' -fg '" . $CONF_HASH{'latex_fgcolor'} . 
                "' -T tight -o '" . $CONF_HASH{'blog_directory'} . 
                "/articles/$art_id/img/$_-latex.png' 1> /dev/null 2> /dev/null");
-        unlink("$TMP_LOCATION/$_.tex", "$TMP_LOCATION/$_.aux", "$TMP_LOCATION/$_.dvi", "$TMP_LOCATION/$_.log");
+        unlink("$TMP_LOCATION/$_-pre.tex", "$TMP_LOCATION/$_-pre.aux", "$TMP_LOCATION/$_-pre.dvi", "$TMP_LOCATION/$_-pre.log");
     }
     for (1 .. $gnuplot_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("cd $TMP_LOCATION; gnuplot $_.plot 1> /dev/null 2> /dev/null");
-        system("convert -scale '400x300' '$TMP_LOCATION/$_-plot.png' '" . $CONF_HASH{'blog_directory'} . 
-               "/articles/$art_id/img/$_-plot.png' 1> /dev/null 2> /dev/null");
-        unlink("$TMP_LOCATION/$_.plot", "$TMP_LOCATION/$_-plot.png");
+        system("cd $TMP_LOCATION; gnuplot $_-gnu.plot 1> /dev/null 2> /dev/null");
+        system("convert -scale '400x300' '$TMP_LOCATION/$_-gnu.png' '" . $CONF_HASH{'blog_directory'} . 
+               "/articles/$art_id/img/$_-gnu.png' 1> /dev/null 2> /dev/null");
+        unlink("$TMP_LOCATION/$_-gnu.plot", "$TMP_LOCATION/$_-gnu.png");
     }
 
     return $finaltext;
