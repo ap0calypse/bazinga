@@ -276,7 +276,7 @@ sub list_contents {
     }
     print "\n\n";
     print "Pages:\n" . "* " x 20 . "\n";
-    for (keys %{$BZG_HASH->{'pages'}}) {
+    for (sort { $BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'} } keys %{$BZG_HASH->{'pages'}}) {
         print " $_ ($BZG_HASH->{'pages'}{$_}{'title'})";
         print " from: $BZG_HASH->{'pages'}{$_}{'author'} - $BZG_HASH->{'pages'}{$_}{'date'}";
         print " $BZG_HASH->{'pages'}{$_}{'time'}\n";
