@@ -12,9 +12,14 @@ BLOG_DIRECTORY: "/home/ap0calypse/blog"
 BLOG_TITLE: "/home/ap0calypse"
 
 # blog subtitle
-BLOG_SUBTITLE: "yet another blog"
+BLOG_SUBTITLE: "21 is only half the truth ..."
 
 # blog look and feel
 LATEX_FGCOLOR: "rgb 1.0 1.0 1.0"
 LATEX_BGCOLOR: "Transparent"
 LATEX_DPI: "150"
+
+# FTP push information
+PUSH_HOST: "YOUR_HOSTNAME"
+PUSH_LOGIN: "YOUR_USERNAME"
+PUSH_PATH: "/PATH/TO/FTPDIR"

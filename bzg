@@ -222,7 +222,21 @@ sub push_bazinga {
     die "please specify PUSH_HOST in config first" unless $CONF_HASH{'push_host'};
     die "please specify PUSH_LOGIN in config first" unless $CONF_HASH{'push_login'};
     die "please specify PUSH_PATH in config first" unless $CONF_HASH{'push_path'};
-
+    print "pushing to: " . $CONF_HASH{'push_host'} . " into directory " .
+          $CONF_HASH{'push_path'} . "\n";
+    print "Please enter your password (won't be echoed): ";
+    system('stty','-echo');
+    chop(my $password=<STDIN>);
+    system('stty','echo');
+    print "\n";
+    system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
+            $CONF_HASH{'push_path'} . "; rm -rf *' | ncftp -u " .  $CONF_HASH{'push_login'} .
+            " -p $password " . $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
+    system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
+            $CONF_HASH{'push_path'} . "; mput -R *' | ncftp -u " .  $CONF_HASH{'push_login'} .
+            " -p $password " . $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
+    print "push done!\n";
+}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: print_usage
