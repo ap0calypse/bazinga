@@ -7,9 +7,11 @@ use Env qw(HOME USERNAME);
 use v5.10;
 
 # project:      bazinga
+# date:         2011-09 - dato
 # description:  free special blogging tool, inspired by nanoblogger
-# author:       Manuel Fill (ap0calypse@agitatio.org)
+# author(s):    Manuel Fill (ap0calypse@agitatio.org)
 # license:      GPL 
+
 
 ################################################################################
 # version info, config locations, ...
@@ -23,6 +25,7 @@ my $TMP_LOCATION = "$HOME/.bazinga/temp";
 my $TEMPLATEFILE = "$HOME/.bazinga/index.template";
 my %CONF_HASH;
 my %TAG_HASH;
+
 
 ################################################################################
 # %needed_params are the paramaters that should be given in the content files
@@ -45,6 +48,7 @@ if (-e $BZG_FILE && (stat $BZG_FILE)[7] > 5) {
     $BZG_HASH = retrieve $BZG_FILE;
 }
 
+
 ################################################################################
 # here we parse the config file in the users home directory and fill %CONF_HASH
 # with all the information.
@@ -61,30 +65,14 @@ while (<$CONFFD>) {
         mkdir "$CONF_HASH{'blog_directory'}/articles" unless -e "$CONF_HASH{'blog_directory'}/articles";
         mkdir "$CONF_HASH{'blog_directory'}/css" unless -e "$CONF_HASH{'blog_directory'}/css";
     }
-    if (m/.*BLOG_TITLE: *\"(.+)\".*/) {
-        $CONF_HASH{'blog_title'} = $1;
-    }
-    if (m/.*BLOG_SUBTITLE: *\"(.+)\".*/) {
-        $CONF_HASH{'blog_subtitle'} = $1;
-    }
-    if (m/.*BLOG_OWNER: *\"(.+)\".*/) {
-        $CONF_HASH{'blog_owner'} = $1;
-    }
-    if (m/.*BLOG_EMAIL: *\"(.+)\".*/) {
-        $CONF_HASH{'blog_email'} = $1;
-    }
-    if (m/.*BLOG_WEBSITE: *\"(.+)\".*/) {
-        $CONF_HASH{'blog_website'} = $1;
-    }
-    if (m/.*LATEX_FGCOLOR: *\"(.+)\".*/) {
-        $CONF_HASH{'latex_fgcolor'} = $1;
-    }
-    if (m/.*LATEX_BGCOLOR: *\"(.+)\".*/) {
-        $CONF_HASH{'latex_bgcolor'} = $1;
-    }
-    if (m/.*LATEX_DPI: *\"(.+)\".*/) {
-        $CONF_HASH{'latex_dpi'} = $1;
-    }
+    $CONF_HASH{'blog_title'} = $1 if m/.*BLOG_TITLE: *\"(.+)\".*/;
+    $CONF_HASH{'blog_subtitle'} = $1 if m/.*BLOG_SUBTITLE: *\"(.+)\".*/;
+    $CONF_HASH{'blog_owner'} = $1 if m/.*BLOG_OWNER: *\"(.+)\".*/;
+    $CONF_HASH{'blog_email'} = $1 if m/.*BLOG_EMAIL: *\"(.+)\".*/;
+    $CONF_HASH{'blog_website'} = $1 if m/.*BLOG_WEBSITE: *\"(.+)\".*/;
+    $CONF_HASH{'latex_fgcolor'} = $1 if m/.*LATEX_FGCOLOR: *\"(.+)\".*/;
+    $CONF_HASH{'latex_bgcolor'} = $1 if m/.*LATEX_BGCOLOR: *\"(.+)\".*/;
+    $CONF_HASH{'latex_dpi'} = $1 if m/.*LATEX_DPI: *\"(.+)\".*/;
 }
 close $CONFFD;
 
@@ -95,6 +83,7 @@ close $CONFFD;
 
 die "not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
 die "configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
+die "index template $TEMPLATEFILE doesn't exist or isn't readable, please check.\n" unless (-e $TEMPLATEFILE);
 mkdir $TMP_LOCATION unless -d $TMP_LOCATION;
 
 
@@ -215,9 +204,6 @@ if ($ARGV[0]) {
 }
 
 
-
-
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: print_usage
 # needs:    nothing
@@ -257,8 +243,6 @@ sub print_usage {
 }
 
 
-
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: list_contents
 # needs:    nothing
@@ -284,6 +268,7 @@ sub list_contents {
     print "\n\n";
 }
 
+
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: add_content
 # needs:    1 or 0 (only check), path to content file, (maybe ID, only if called from replace_content)
@@ -293,9 +278,7 @@ sub list_contents {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub add_content {
-    my $add = shift;
-    my $content_file = shift;
-    my $given_id = shift;
+    my ($add, $content_file, $given_id) = @_;
     my ($type, $random);
     if ($given_id) {
         $random = $given_id;
@@ -344,7 +327,6 @@ sub add_content {
 }
 
 
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: delete content
 # needs:    valid id from a page / article
@@ -376,9 +358,6 @@ sub delete_content {
 }
 
 
-
-
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: tag_article
 # needs:    valid id from an article, string with tags
@@ -405,7 +384,6 @@ sub tag_article {
         exit 5;
     }
 }
-
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -440,9 +418,6 @@ sub replace_content {
 }
 
 
-
-
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: update_bazinga
 # needs:    nothing
@@ -468,9 +443,6 @@ sub update_bazinga {
     }
     generate_index();
 }
-
-
-
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -567,9 +539,6 @@ sub generate_file {
 }
 
 
-
-
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: generate_index
 # needs:    nothing
@@ -645,9 +614,6 @@ sub generate_index {
 }
 
 
-
-
-
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: generate_tagpages
 # needs:    nothing
@@ -683,9 +649,7 @@ sub generate_tagpages {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub convert_text {
-    my $text = shift;
-    my $art_id = shift;
-    my $is_index = shift;
+    my ($text, $art_id, $is_index) = @_;
     my ($code_text, $code_lang, $want_ln, $line_number, $in_code, $in_latex, $in_gnuplot, $latex_present, $gnuplot_present) = 
        (0, 0, 0, 0, 0, 0, 0, 0, 0);
     $text =~ s/\r//gmx;
@@ -784,9 +748,6 @@ sub convert_text {
 
     return $finaltext;
 }
-
-
-
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
