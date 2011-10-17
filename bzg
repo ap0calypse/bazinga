@@ -73,6 +73,9 @@ while (<$CONFFD>) {
     $CONF_HASH{'latex_fgcolor'} = $1 if m/.*LATEX_FGCOLOR: *\"(.+)\".*/;
     $CONF_HASH{'latex_bgcolor'} = $1 if m/.*LATEX_BGCOLOR: *\"(.+)\".*/;
     $CONF_HASH{'latex_dpi'} = $1 if m/.*LATEX_DPI: *\"(.+)\".*/;
+    $CONF_HASH{'push_host'} = $1 if m/.*PUSH_HOST: *\"(.+)\".*/;
+    $CONF_HASH{'push_login'} = $1 if m/.*PUSH_LOGIN: *\"(.+)\".*/;
+    $CONF_HASH{'push_path'} = $1 if m/.*PUSH_PATH: *\"(.+)\".*/;
 }
 close $CONFFD;
 
@@ -178,6 +181,9 @@ if ($ARGV[0]) {
     elsif ($ARGV[0] eq "update") {
         update_bazinga();
     }
+    elsif ($ARGV[0] eq "push") {
+        push_bazinga();
+    }
     elsif ($ARGV[0] eq "tag") {
         if ($ARGV[1]) {
             if ($ARGV[1] =~ m/[[:alnum:]]{1,16}/) {
@@ -202,6 +208,20 @@ if ($ARGV[0]) {
         print "You entered an unknown parameter, please check.\n"; 
     }
 }
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: push_bazinga
+# needs:    ncftp
+# returns:  nothing
+# calls:    ncftp (system)
+# purpose:  updates the ftp structure
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub push_bazinga {
+    die "please specify PUSH_HOST in config first" unless $CONF_HASH{'push_host'};
+    die "please specify PUSH_LOGIN in config first" unless $CONF_HASH{'push_login'};
+    die "please specify PUSH_PATH in config first" unless $CONF_HASH{'push_path'};
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
