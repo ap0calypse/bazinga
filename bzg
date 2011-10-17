@@ -268,7 +268,7 @@ sub print_usage {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub list_contents {
-    print "Articles:\n" . "* " x 20 . "\n\n";
+    print "Articles:\n" . "* " x 20 . "\n";
     for (sort { $BZG_HASH->{'articles'}{$a}{'date'} cmp  $BZG_HASH->{'articles'}{$b}{'date'} } keys %{$BZG_HASH->{'articles'}}) {
         print " $_ ($BZG_HASH->{'articles'}{$_}{'title'})";
         print " from: $BZG_HASH->{'articles'}{$_}{'author'} - $BZG_HASH->{'articles'}{$_}{'date'}";
