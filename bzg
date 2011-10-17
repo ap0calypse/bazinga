@@ -135,7 +135,7 @@ if ($ARGV[0]) {
     }
     elsif ($ARGV[0] eq "delete") {
         if ($ARGV[1]) {
-            if ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
+            if ($ARGV[1] =~ m/[[:alnum:]]{1,16}/) {
                 delete_content($ARGV[1]);
             }
             else { 
@@ -149,7 +149,7 @@ if ($ARGV[0]) {
     }
     elsif ($ARGV[0] eq "replace") {
         if ($ARGV[1]) {
-            if ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
+            if ($ARGV[1] =~ m/[[:alnum:]]{1,16}/) {
                 if ($ARGV[2]) {
                     if (-e $ARGV[2]) {
                         replace_content($ARGV[1], $ARGV[2]);
@@ -191,7 +191,7 @@ if ($ARGV[0]) {
     }
     elsif ($ARGV[0] eq "tag") {
         if ($ARGV[1]) {
-            if ($ARGV[1] =~ m/[[:alnum:]]{16}/) {
+            if ($ARGV[1] =~ m/[[:alnum:]]{1,16}/) {
                 if ($ARGV[2]) {
                     tag_article($ARGV[1], $ARGV[2]);
                 }
@@ -358,7 +358,7 @@ sub delete_content {
     my $key;
     if (exists $BZG_HASH->{'pages'}) {
         for $key (keys %{$BZG_HASH->{'pages'}}) {
-            if ($key eq $delete_id) {
+            if ($key =~ m/^$delete_id.*/) {
                 delete $BZG_HASH->{'pages'}{$key};
                 print "deleted page '$key'\n";
             }
@@ -366,7 +366,7 @@ sub delete_content {
     }
     if (exists $BZG_HASH->{'articles'}) {
         for $key (keys %{$BZG_HASH->{'articles'}}) {
-            if ($key eq $delete_id) {
+            if ($key =~ m/^$delete_id.*/) {
                 delete $BZG_HASH->{'articles'}{$key};
                 print "deleted article '$key'\n";
             }
@@ -389,9 +389,15 @@ sub delete_content {
 
 sub tag_article {
     my ($tag_id, $tags) = @_;
-    if (exists  $BZG_HASH->{'articles'}{$tag_id}) {
-        $BZG_HASH->{'articles'}{$tag_id}{'tags'} = $tags;
-        print "re-tagged article '$tag_id'.\n";
+    my $tag_complete;
+    for my $key (keys $BZG_HASH->{'articles'}) {
+        if ($key =~ m/^$tag_id.*/) {
+            $tag_complete = $key;
+        }
+    }
+    if (exists  $BZG_HASH->{'articles'}{$tag_complete}) {
+        $BZG_HASH->{'articles'}{$tag_complete}{'tags'} = $tags;
+        print "re-tagged article '$tag_complete'.\n";
         store $BZG_HASH, $BZG_FILE;
     }
     else {
@@ -412,8 +418,25 @@ sub tag_article {
 
 sub replace_content {
     my ($id, $path) = @_;
+    my $full_id;
+    for (keys $BZG_HASH->{'pages'}) {
+        if ($_ =~ m/^$id.*/) {
+            $full_id = $_;
+        }
+    }
+    for (keys $BZG_HASH->{'articles'}) {
+        if ($_ =~ m/^$id.*/) {
+            $full_id = $_;
+        }
+    }
     delete_content($id);
-    add_content(1, $path, $id);
+    if ($full_id) {
+        add_content(1, $path, $full_id);
+    }
+    else {
+        print "content with id $id doesn't exist, please check.\n";
+        exit 5;
+    }
 }
 
 
@@ -743,17 +766,19 @@ sub convert_text {
     for (1 .. $latex_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("cd $TMP_LOCATION; texi2dvi -q $_.tex");
-        system("cd $TMP_LOCATION; dvipng -q $TMP_LOCATION/$_.dvi -bg \'$CONF_HASH{'latex_bgcolor'}\' -D $CONF_HASH{'latex_dpi'} " .
-               "-fg \'$CONF_HASH{'latex_fgcolor'}\' -O .1in -T tight " .
-               "-o $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-latex.png ");
+        system("cd $TMP_LOCATION; texi2dvi -b -q --tidy $_.tex");
+        system("cd $TMP_LOCATION; dvipng '$_.dvi' -bg '" . $CONF_HASH{'latex_bgcolor'} . 
+               "' -D '" . $CONF_HASH{'latex_dpi'} . "' -fg '" . $CONF_HASH{'latex_fgcolor'} . 
+               "' -T tight -o '" . $CONF_HASH{'blog_directory'} . 
+               "/articles/$art_id/img/$_-latex.png' 1> /dev/null 2> /dev/null");
         unlink("$TMP_LOCATION/$_.tex", "$TMP_LOCATION/$_.aux", "$TMP_LOCATION/$_.dvi", "$TMP_LOCATION/$_.log");
     }
     for (1 .. $gnuplot_present) {
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
         mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
-        system("cd $TMP_LOCATION; gnuplot $TMP_LOCATION/$_.plot");
-        system("convert -scale 400x300 $TMP_LOCATION/$_-plot.png $CONF_HASH{'blog_directory'}/articles/$art_id/img/$_-plot.png");
+        system("cd $TMP_LOCATION; gnuplot $_.plot 1> /dev/null 2> /dev/null");
+        system("convert -scale '400x300' '$TMP_LOCATION/$_-plot.png' '" . $CONF_HASH{'blog_directory'} . 
+               "/articles/$art_id/img/$_-plot.png' 1> /dev/null 2> /dev/null");
         unlink("$TMP_LOCATION/$_.plot", "$TMP_LOCATION/$_-plot.png");
     }
 
