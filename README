@@ -48,23 +48,29 @@ just the piece of software you always wanted.
 1.2. NAME
 
 I chose the name bazinga because I'm a huge fan of the TV series 'Big Bang Theory', where
-one of the main actors (Sheldon Cooper) uses the phrase "Bazinga!" to tell others that he
-made a joke. Clearly, bazinga is too a little bit of a joke ;).
+one of the main characters (Sheldon Cooper) uses the phrase "Bazinga!" to tell others that he
+made a joke. Clearly, bazinga is a little bit of a joke too ;).
 
 
 2. SETUP
 
 Setup is pretty easy. If you read this you might already as well have installed it. It
-doesn't need to be located anywhere special. The only file that needs to be in the right
-place is the main configuration file, which must be located in "~/.bazinga/bazinga.conf"
-or equally symlinked to this location. Some sample configuration files can be found in the
-conf/ directory. All the data will be stored in a file called "~/.bazinga/bazinga.dat". It
-is a perlish stored variable and won't be easy to read. It can be backed up whenever you want.
+doesn't need to be located anywhere special. The only files that need to be in the right
+place is the main configuration file, the index.template and the style.css which must be 
+located in "~/.bazinga/" or equally symlinked to this location. Some sample configuration 
+files can be found in the examples/ directory. All the data will be stored in a file 
+called "~/.bazinga/bazinga.dat". It is a perlish stored variable and won't be easy to read. 
+It can be backed up whenever you want. (eg. put it in your dropbox account or whatever)
 
 2.1 PREREQUISITES
 
 bazinga depends on some other programs to run. Be sure to have them installed before
 you complain about problems which could have been avoided by reading the README ;).
+
+There is currently no windows version available, and I guess there will never be one.
+Mostly because I don't work with it. If anyone wants to port it to Windows, he is 
+on his own, because I won't support this crap.
+
 Here is a list of the prerequisites:
 
     - highlight (needed for syntax highlighting feature)
@@ -78,12 +84,10 @@ For perfect user experience I recommend installing all these packages.
 
 2.2. CONFIGURATION
 
-The easiest way to get everything started is to copy one of the example configurations
-from the conf/ directory to ~/.bazinga/bazinga.conf and edit it to fit your needs. 
-Configuration may look Perl'ish (well, because it is), but should be pretty self-explaining.
-
-There is also a style.css and an index.template which should be put in your .bazinga-directory. You can change it
-to whatever you want. bzg will then use this css to pimp your blog.
+The easiest way to get everything started is to copy the example configuration, the style.css 
+and the index.template from the examples/ directory to ~/.bazinga/ and edit it to fit your needs. 
+The configuration file has to be named "bazinga.conf", the stylesheet "style.css" and the template
+"index.template". Configuration should be pretty self-explaining.
 
 
 2.3. DIRECTORY STRUCTURE
@@ -122,7 +126,7 @@ taken from the examples/ directory. These examples should cover the range of wha
 possible. If you have feature requests or want something added, please contact me or 
 implement it yourself and send me a patch. Would be awesome.
 
-At the moment, it is possible to make bold/italic/underlined text and insert code-snippets.
+At the moment, it is possible to insert code-snippets (see explanation below).
 The coolest feature however is the automatic conversion of LaTeX-formulae into images,
 which then are inserted instead.
 
@@ -142,7 +146,7 @@ If you want to include LaTeX-formulae, it is very simple. bazinga will use every
 LATEX_START and LATEX_END, converts it to png and inserts it instead. For example:
 
 LATEX_START
-....
+$\sum$
 LATEX_END
 
 
@@ -196,6 +200,16 @@ For example, we want to add a new article based on a template:
     # after that, you should have the complete blog up and ready in
     # the directory you specified in your config.
 
+    # if you notice, that the tags weren't correct you can re-tag them.
+    # first, we find out the id with "bzg list"
+
+    $ bzg list
+    ......
+    # your articles scroll by
+
+    $ bzg tag 3423a "main programming perl"
+    $ bzg update
+
 
 
 4. CREDITS
@@ -206,4 +220,4 @@ Thanks to stefan-k for giving me the hint with the LaTeX- and gnuplot-integratio
 
 4.1. LICENSE
 
-dunno yet ...
+I guess that I should use a copyleft license, so assume it is GPL.
