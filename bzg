@@ -390,7 +390,7 @@ sub delete_content {
 sub tag_article {
     my ($tag_id, $tags) = @_;
     my $tag_complete;
-    for my $key (keys $BZG_HASH->{'articles'}) {
+    for my $key (keys %{$BZG_HASH->{'articles'}}) {
         if ($key =~ m/^$tag_id.*/) {
             $tag_complete = $key;
         }
@@ -419,12 +419,12 @@ sub tag_article {
 sub replace_content {
     my ($id, $path) = @_;
     my $full_id;
-    for (keys $BZG_HASH->{'pages'}) {
+    for (keys %{$BZG_HASH->{'pages'}}) {
         if ($_ =~ m/^$id.*/) {
             $full_id = $_;
         }
     }
-    for (keys $BZG_HASH->{'articles'}) {
+    for (keys %{$BZG_HASH->{'articles'}}) {
         if ($_ =~ m/^$id.*/) {
             $full_id = $_;
         }
