@@ -139,6 +139,20 @@ if ($ARGV[0]) {
             exit 3;
         }
     }
+    elsif ($ARGV[0] eq "export") {
+        if ($ARGV[1]) {
+            if ($ARGV[1] =~ m/[[:alnum:]]{1,16}/) {
+                export_content($ARGV[1]);
+            }
+            else { 
+                print "$ARGV[1] is not a valid id, please specify a correct id.\n"; 
+            }
+        }
+        else {
+            print "You have to specify a valid content id.\n";
+            exit 3;
+        }
+    }
     elsif ($ARGV[0] eq "replace") {
         if ($ARGV[1]) {
             if ($ARGV[1] =~ m/[[:alnum:]]{1,16}/) {
@@ -261,6 +275,7 @@ sub print_usage {
         bzg check FILE
         bzg list
         bzg update 
+        bzg push
 
     examples:
 
@@ -272,6 +287,7 @@ sub print_usage {
         bzg tag 6783423 "main programming testing"
         bzg check maybe_corrupt_article.txt
         bzg update
+        bzg push
 
 );
 }
@@ -360,6 +376,52 @@ sub add_content {
     }
 }
 
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: delete content
+# needs:    valid id from a page / article
+# returns:  nothing
+# calls:    nothing
+# purpose:  deletes any content and the corresponding id from the index
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub export_content {
+    my $export_id = shift;
+    my $key;
+    if (exists $BZG_HASH->{'pages'}) {
+        for $key (keys %{$BZG_HASH->{'pages'}}) {
+            if ($key =~ m/^$export_id.*/) {
+                print "category: \"pages\"\n";
+                print "author: \"" . $BZG_HASH->{'pages'}{$key}{'author'} . "\"\n";
+                print "website: \"" . $BZG_HASH->{'pages'}{$key}{'website'} . "\"\n";
+                print "email: \"" . $BZG_HASH->{'pages'}{$key}{'email'} . "\"\n";
+                print "title: \"" . $BZG_HASH->{'pages'}{$key}{'title'} . "\"\n";
+                print "date: \"" . $BZG_HASH->{'pages'}{$key}{'date'} . "\"\n";
+                print "time: \"" . $BZG_HASH->{'pages'}{$key}{'time'} . "\"\n\n";
+                print "START_TEXT\n";
+                print $BZG_HASH->{'pages'}{$key}{'text'};
+                print "END_TEXT\n";
+            }
+        }
+    }
+    if (exists $BZG_HASH->{'articles'}) {
+        for $key (keys %{$BZG_HASH->{'articles'}}) {
+            if ($key =~ m/^$export_id.*/) {
+                print "category: \"articles\"\n";
+                print "author: \"" . $BZG_HASH->{'articles'}{$key}{'author'} . "\"\n";
+                print "website: \"" . $BZG_HASH->{'articles'}{$key}{'website'} . "\"\n";
+                print "email: \"" . $BZG_HASH->{'articles'}{$key}{'email'} . "\"\n";
+                print "title: \"" . $BZG_HASH->{'articles'}{$key}{'title'} . "\"\n";
+                print "date: \"" . $BZG_HASH->{'articles'}{$key}{'date'} . "\"\n";
+                print "time: \"" . $BZG_HASH->{'articles'}{$key}{'time'} . "\"\n";
+                print "tags: \"" . $BZG_HASH->{'articles'}{$key}{'tags'} . "\"\n\n";
+                print "START_TEXT\n";
+                print $BZG_HASH->{'articles'}{$key}{'text'};
+                print "END_TEXT\n";
+            }
+        }
+    }
+}
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: delete content
