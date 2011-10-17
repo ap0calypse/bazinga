@@ -75,7 +75,8 @@ Here is a list of the prerequisites:
 
     - highlight (needed for syntax highlighting feature)
     - dvipng (provided by texlive-bin)
-    - texi2dvi (provided by texinfo package)
+    - latex (provided by texlive-bin package)
+    - ncftp (for ftp push function)
     - gnuplot
     - convert (provided by ImageMagick)
 
