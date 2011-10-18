@@ -553,10 +553,29 @@ sub update_bazinga {
 
 sub generate_file {
     my ($type, $id) = @_;
+    my ($dirstring, $year, $month, $day);
+    if ($type ne 'tags') {
+        $dirstring = $BZG_HASH->{$type}{$id}{'title'};
+        ($year, $month, $day) = split (/-/, $BZG_HASH->{$type}{$id}{'date'});
+        $dirstring =~ s/ +/-/g;
+        $dirstring =~ s/[^a-z0-9A-Z-]//g;
+        $dirstring = lc(substr($dirstring, 0, 30));
+    }
+    else {
+        $dirstring = $id;
+        $dirstring = lc(substr($dirstring, 0, 30));
+    }
     mkdir ($CONF_HASH{'blog_directory'} . "/$type");
-    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id");
-    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$id/img") unless $type eq "tags";
-    my $indexfile = $CONF_HASH{'blog_directory'} . "/$type/$id/index.html";
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$year") if $type eq 'articles';
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$year/$month") if $type eq 'articles';
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$year/$month/$day") if $type eq 'articles';
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$year/$month/$day/$dirstring") if $type eq 'articles';
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$year/$month/$day/$dirstring/img") if $type eq "articles";
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$dirstring") if $type eq "pages";
+    mkdir ($CONF_HASH{'blog_directory'} . "/$type/$dirstring/img") if $type eq "pages";
+    my $indexfile;
+    $indexfile = $CONF_HASH{'blog_directory'} . "/$type/$year/$month/$day/$dirstring.html" if $type eq 'articles';;
+    $indexfile = $CONF_HASH{'blog_directory'} . "/$type/$dirstring.html" unless $type eq 'articles';
     open my $INDEX, "> $indexfile" or die "$!";
     open my $TEMPLATE, "< $TEMPLATEFILE" or die "$!";
     while (my $line = <$TEMPLATE>) {
@@ -567,19 +586,23 @@ sub generate_file {
             $line =~ s/\[BLOG_SUBTITLE\]/$CONF_HASH{'blog_subtitle'}/gmx;
         }
         if ($line =~ m/\[STYLESHEET_LOCATION\]/gmx) {
-            $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/\.\.\/css\/style.css/gmx;
+            $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/\.\.\/\.\.\/\.\.\/css\/style.css/gmx if $type eq 'articles';
+            $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/css\/style.css/gmx unless $type eq 'articles';
         }
         if ($line =~ m/\[MENU\]/gmx) {
             $line =~ s/\[MENU\]//gmx;
-            $line .= "<div class='menupoint'><a href='../../index.html'>" .
-                     "main page</a></div><br />\n";
+            $line .= "<div class='menupoint'><a href='../../../../index.html'>" .
+                     "main page</a></div><br />\n" if $type eq 'articles';
+            $line .= "<div class='menupoint'><a href='../index.html'>" .
+                     "main page</a></div><br />\n" unless $type eq 'articles';
             for (sort keys %{$BZG_HASH}) {
                 $line .= "<div class='menupoint'>$_</div>\n";
                 if ($_ eq 'articles') {
                     $line .= "<ul>\n";
                     for my $tags (sort keys %TAG_HASH) {
-                        $line .= "<li><a href='../../tags/$tags/index.html'>" .
-                                 $tags . "</a><div style='float: right;'>( " . scalar @{$TAG_HASH{$tags}} . 
+                        $line .= "<li><a href='../../../../tags/$tags.html'>" if $type eq 'articles';
+                        $line .= "<li><a href='../tags/$tags.html'>" unless $type eq 'articles';
+                        $line .= $tags . "</a><div style='float: right;'>( " . scalar @{$TAG_HASH{$tags}} . 
                                  " )</div></li>\n";
                     }
                     $line .= "</ul>\n";
@@ -588,9 +611,15 @@ sub generate_file {
                     $line .= "<ul>\n";
                     for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} 
                                         keys %{$BZG_HASH->{'pages'}}) {
+                        my $dirstring = $BZG_HASH->{'pages'}{$pageid}{'title'};
+                        $dirstring =~ s/ +/-/g;
+                        $dirstring =~ s/[^a-z0-9A-Z-]//g;
+                        $dirstring = lc(substr($dirstring, 0, 30));
 
-                        $line .= "<li><a href='../../pages/$pageid/index.html'>" . 
-                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
+                        $line .= "<li><a href='../../../../pages/$dirstring.html'>" . 
+                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n" if $type eq 'articles';
+                        $line .= "<li><a href='../pages/$dirstring.html'>" . 
+                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n" unless $type eq 'articles';
                     
                     }
                     $line .= "</ul>\n";
@@ -607,11 +636,21 @@ sub generate_file {
                 $line =~ s/\[CONTENT\]//gmx;
                 $line .= "<h2>Articles with tag: $id</h2>";
                 for (@{$TAG_HASH{$id}}) {
+                    my $dirstring = $BZG_HASH->{'articles'}{$_}{'title'};
+                    ($year, $month, $day) = split (/-/, $BZG_HASH->{'articles'}{$_}{'date'});
+                    $dirstring =~ s/ +/-/g;
+                    $dirstring =~ s/[^a-z0-9A-Z-]//g;
+                    $dirstring = lc(substr($dirstring, 0, 30));
                     $line .= "<p>(" . $BZG_HASH->{'articles'}{$_}{'date'} . 
                              " - " . $BZG_HASH->{'articles'}{$_}{'time'} . 
-                             ") : <a href='../../articles/$_/index.html'>" . 
+                             ") : <a href='../../../../articles/$year/$month/$day/$dirstring.html'>" . 
                              $BZG_HASH->{'articles'}{$_}{'title'} .
-                             "</a></p>";
+                             "</a></p>" if $line eq 'articles';
+                    $line .= "<p>(" . $BZG_HASH->{'articles'}{$_}{'date'} . 
+                             " - " . $BZG_HASH->{'articles'}{$_}{'time'} . 
+                             ") : <a href='../articles/$year/$month/$day/$dirstring.html'>" . 
+                             $BZG_HASH->{'articles'}{$_}{'title'} .
+                             "</a></p>" unless $line eq 'articles';
                 }
             }
             if ($type eq 'articles') {
@@ -667,7 +706,7 @@ sub generate_index {
                 if ($_ eq 'articles') {
                     $line .= "<ul>\n";
                     for my $tags (sort keys %TAG_HASH) {
-                        $line .= "<li><a href='./tags/$tags/index.html'>" .
+                        $line .= "<li><a href='./tags/$tags.html'>" .
                                  $tags . "</a><div style='float: right;'>( " . scalar @{$TAG_HASH{$tags}} . 
                                  " )</div></li>\n";
                     }
@@ -677,8 +716,12 @@ sub generate_index {
                     $line .= "<ul>\n";
                     for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} 
                                         keys %{$BZG_HASH->{'pages'}}) {
+                        my $dirstring = $BZG_HASH->{'pages'}{$pageid}{'title'};
+                        $dirstring =~ s/ +/-/g;
+                        $dirstring =~ s/[^a-z0-9A-Z-]//g;
+                        $dirstring = lc(substr($dirstring, 0, 30));
 
-                        $line .= "<li><a href='./pages/$pageid/index.html'>" . 
+                        $line .= "<li><a href='./pages/$dirstring.html'>" . 
                                  $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
                     
                     }
@@ -693,7 +736,12 @@ sub generate_index {
             }
             for (reverse sort keys %date_hash) {
                 for my $id (@{$date_hash{$_}}) {
-                    $line .= "<h2><a href='./articles/$id/index.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
+                    my $dirstring = $BZG_HASH->{'articles'}{$id}{'title'};
+                    my ($year, $month, $day) = split (/-/, $BZG_HASH->{'articles'}{$id}{'date'});
+                    $dirstring =~ s/ +/-/g;
+                    $dirstring =~ s/[^a-z0-9A-Z-]//g;
+                    $dirstring = lc(substr($dirstring, 0, 30));
+                    $line .= "<h2><a href='./articles/$year/$month/$day/$dirstring.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
                     $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'}, $id, "index");
                     $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{'articles'}{$id}{'author'} . 
                              " in " . join(", ", split / /, $BZG_HASH->{'articles'}{$id}{'tags'}) . " on <i>" .
@@ -752,6 +800,24 @@ sub convert_text {
     my ($LATEXFD, $GNUPLOTFD, $IMAGEFD);
     my @textlines = split /\n/, $text;
     my $finaltext;
+    my $dirstring;
+    my ($year, $month, $day);
+    my $is_page = 0;
+    if (exists $BZG_HASH->{'articles'}{$art_id}) {
+        $dirstring = $BZG_HASH->{'articles'}{$art_id}{'title'};
+        ($year, $month, $day) = split (/-/, $BZG_HASH->{'articles'}{$art_id}{'date'});
+        $dirstring =~ s/ +/-/g;
+        $dirstring =~ s/[^a-z0-9A-Z-]//g;
+        $dirstring = lc(substr($dirstring, 0, 30));
+    }
+    else {
+        $dirstring = $BZG_HASH->{'pages'}{$art_id}{'title'};
+        $dirstring =~ s/ +/-/g;
+        $dirstring =~ s/[^a-z0-9A-Z-]//g;
+        $dirstring = lc(substr($dirstring, 0, 30));
+        $is_page = 1;
+    }
+
     for (@textlines) {
         if (m/LATEX_START/) {
             $latex_present++;
@@ -759,11 +825,12 @@ sub convert_text {
             open $LATEXFD, "> $TMP_LOCATION/$latex_present-pre.tex";
             print $LATEXFD "\\documentclass{article}\n" .  "\\pagestyle{empty}\n" . "\\begin{document}\n";
             if ($is_index) {
-                $finaltext .= "<br /><img src='./articles/$art_id/img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
+                $finaltext .= "<br /><img src='./articles/$year/$month/$day/$dirstring/img/$latex_present-latex.png' alt='$latex_present' /><br />\n" unless $is_page;
             }
             else {
-                $finaltext .= "<br /><img src='./img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
+                $finaltext .= "<br /><img src='./$dirstring/img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
             }
+
             next;
         }
         if (m/LATEX_END/) {
@@ -778,10 +845,10 @@ sub convert_text {
             open $GNUPLOTFD, "> $TMP_LOCATION/$gnuplot_present-gnu.plot";
             print $GNUPLOTFD "set terminal png\n" . "set output '$gnuplot_present-gnu.png'\n";
             if ($is_index) {
-                $finaltext .= "<br /><img src='./articles/$art_id/img/$gnuplot_present-gnu.png' alt='$gnuplot_present' /><br />\n";
+                $finaltext .= "<br /><img src='./articles/$year/$month/$day/$dirstring/img/$gnuplot_present-gnu.png' alt='$gnuplot_present' /><br />\n" unless $is_page;
             }
             else {
-                $finaltext .= "<br /><img src='./img/$gnuplot_present-gnu.png' alt='$gnuplot_present' /><br />\n";
+                $finaltext .= "<br /><img src='./$dirstring/img/$gnuplot_present-gnu.png' alt='$gnuplot_present' /><br />\n";
             }
             next;
         }
@@ -824,21 +891,24 @@ sub convert_text {
         }
     }
     for (1 .. $latex_present) {
-        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
-        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("cd $TMP_LOCATION; latex -interaction=batchmode  $_-pre.tex > /dev/null");
         system("cd $TMP_LOCATION; dvipng '$_-pre.dvi' -bg '" . $CONF_HASH{'latex_bgcolor'} . 
                "' -D '" . $CONF_HASH{'latex_dpi'} . "' -fg '" . $CONF_HASH{'latex_fgcolor'} . 
                "' -T tight -o '" . $CONF_HASH{'blog_directory'} . 
-               "/articles/$art_id/img/$_-latex.png' 1> /dev/null 2> /dev/null");
+               "/articles/$year/$month/$day/$dirstring/img/$_-latex.png' 1> /dev/null 2> /dev/null") unless $is_page;
+        system("cd $TMP_LOCATION; dvipng '$_-pre.dvi' -bg '" . $CONF_HASH{'latex_bgcolor'} . 
+               "' -D '" . $CONF_HASH{'latex_dpi'} . "' -fg '" . $CONF_HASH{'latex_fgcolor'} . 
+               "' -T tight -o '" . $CONF_HASH{'blog_directory'} . 
+               "/pages/$dirstring/img/$_-latex.png' 1> /dev/null 2> /dev/null") if $is_page;
+
         unlink("$TMP_LOCATION/$_-pre.tex", "$TMP_LOCATION/$_-pre.aux", "$TMP_LOCATION/$_-pre.dvi", "$TMP_LOCATION/$_-pre.log");
     }
     for (1 .. $gnuplot_present) {
-        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id";
-        mkdir "$CONF_HASH{'blog_directory'}/articles/$art_id/img";
         system("cd $TMP_LOCATION; gnuplot $_-gnu.plot 1> /dev/null 2> /dev/null");
         system("convert -scale '400x300' '$TMP_LOCATION/$_-gnu.png' '" . $CONF_HASH{'blog_directory'} . 
-               "/articles/$art_id/img/$_-gnu.png' 1> /dev/null 2> /dev/null");
+               "/articles/$year/$month/$day/$dirstring/img/$_-gnu.png' 1> /dev/null 2> /dev/null") unless $is_page;
+        system("convert -scale '400x300' '$TMP_LOCATION/$_-gnu.png' '" . $CONF_HASH{'blog_directory'} . 
+               "/pages/$dirstring/img/$_-gnu.png' 1> /dev/null 2> /dev/null") if $is_page;
         unlink("$TMP_LOCATION/$_-gnu.plot", "$TMP_LOCATION/$_-gnu.png");
     }
 

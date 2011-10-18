@@ -99,25 +99,19 @@ you can update your blog structure with "bzg update". This will create the follo
 blog/
   -> index.html
   -> articles/
-       -> 5238fed2.../
-            -> index.html
+       -> article-1-blabla.../
+            -> article-1-bla....html
             -> img/
                  -> 1.png
                  -> 2.png
                  -> ...
-       -> 6732.../
-            -> index.html
-            -> ...
   -> pages/
-       -> 5723498.../
-            -> index.html
+       -> blablabla.../
+            -> blablabla.html
             -> img/
                  -> 1.png
                  -> 2.png
                  -> ...
-       -> 6732.../
-            -> index.html
-            -> ..
 
 
 3. FEATURES
