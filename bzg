@@ -9,15 +9,15 @@ use v5.10;
 # project:      bazinga
 # date:         2011-09 - dato
 # description:  free special blogging tool, inspired by nanoblogger
-# author(s):    Manuel Fill (ap0calypse@agitatio.org)
-# license:      GPL 
+# author:       see AUTHORS
+# license:      see LICENSE 
 
 
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # version info, config locations, ...
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $VERSION = "0.1";
+my $VERSION = "0.2";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
 my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
@@ -27,9 +27,9 @@ my %CONF_HASH;
 my %TAG_HASH;
 
 
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # %needed_params are the paramaters that should be given in the content files
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 my %needed_params = (
     'articles'   => [qw(author title email website text date time tags)],
@@ -37,11 +37,11 @@ my %needed_params = (
 );
 
 
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # BZG_HASH is the mega-hash containing all the information.
 # if the file is too small (<5b) we can surely asume it doesn't exist,
 # otherwise we read in the hash from the file
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 my $BZG_HASH;
 if (-e $BZG_FILE && (stat $BZG_FILE)[7] > 5) {
@@ -49,10 +49,10 @@ if (-e $BZG_FILE && (stat $BZG_FILE)[7] > 5) {
 }
 
 
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # here we parse the config file in the users home directory and fill %CONF_HASH
 # with all the information.
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 open my $CONFFD, "< $CONFIG" or die "can't access config, please check $CONFIG\n";
 while (<$CONFFD>) {
@@ -62,6 +62,7 @@ while (<$CONFFD>) {
         $CONF_HASH{'blog_directory'} = $1;
         mkdir $CONF_HASH{'blog_directory'} unless -e $CONF_HASH{'blog_directory'};
         mkdir "$CONF_HASH{'blog_directory'}/pages" unless -e "$CONF_HASH{'blog_directory'}/pages";
+        mkdir "$CONF_HASH{'blog_directory'}/tags" unless -e "$CONF_HASH{'blog_directory'}/tags";
         mkdir "$CONF_HASH{'blog_directory'}/articles" unless -e "$CONF_HASH{'blog_directory'}/articles";
         mkdir "$CONF_HASH{'blog_directory'}/css" unless -e "$CONF_HASH{'blog_directory'}/css";
     }
@@ -80,19 +81,19 @@ while (<$CONFFD>) {
 close $CONFFD;
 
 
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # param check, we die if there is the wrong count
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-die "not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
-die "configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
-die "index template $TEMPLATEFILE doesn't exist or isn't readable, please check.\n" unless (-e $TEMPLATEFILE);
+die " !! Not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
+die " !! Configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
+die " !! Index template $TEMPLATEFILE doesn't exist or isn't readable, please check.\n" unless (-e $TEMPLATEFILE);
 mkdir $TMP_LOCATION unless -d $TMP_LOCATION;
 
 
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # arg-list processing
-################################################################################
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 if ($ARGV[0]) {
     if ($ARGV[0] eq "help") {
@@ -107,7 +108,7 @@ if ($ARGV[0]) {
                 make_template($1);
             }
             else {
-                print "second argument must be 'article' or 'page'.\n";
+                print " !! Second argument must be 'article' or 'page'.\n";
             }
         }
     }
@@ -117,11 +118,11 @@ if ($ARGV[0]) {
                 add_content(1, $ARGV[1]);
             }
             else {
-                print "$ARGV[1] is not a file, please specify a path to a valid content file.\n"; 
+                print " !! $ARGV[1] is not a file, please specify a path to a valid content file.\n"; 
             }
         }
         else {
-            print "You have to specify the path to a valid content file.\n";
+            print " !! You have to specify the path to a valid content file.\n";
             exit 2;
         }
     }
@@ -131,11 +132,11 @@ if ($ARGV[0]) {
                 delete_content($ARGV[1]);
             }
             else { 
-                print "$ARGV[1] is not a valid id, please specify a correct id.\n"; 
+                print " !! $ARGV[1] is not a valid id, please specify a correct id.\n"; 
             }
         }
         else {
-            print "You have to specify a valid content id.\n";
+            print " !! You have to specify a valid content id.\n";
             exit 3;
         }
     }
@@ -145,11 +146,11 @@ if ($ARGV[0]) {
                 export_content($ARGV[1]);
             }
             else { 
-                print "$ARGV[1] is not a valid id, please specify a correct id.\n"; 
+                print " !! $ARGV[1] is not a valid id, please specify a correct id.\n"; 
             }
         }
         else {
-            print "You have to specify a valid content id.\n";
+            print " !! You have to specify a valid content id.\n";
             exit 3;
         }
     }
@@ -161,20 +162,20 @@ if ($ARGV[0]) {
                         replace_content($ARGV[1], $ARGV[2]);
                     }
                     else { 
-                        print "$ARGV[2] is not a file, please specify a path to the content file.\n";
+                        print " !! $ARGV[2] is not a file, please specify a path to the content file.\n";
                     }
                 }
                 else {
-                    print "You have to specify a valid content file\n";
+                    print " !! You have to specify a valid content file\n";
                     exit 4;
                 }
             }
             else { 
-                print "$ARGV[1] is not a valid id, please specify a correct id.\n"; 
+                print " !! $ARGV[1] is not a valid id, please specify a correct id.\n"; 
             }
         }
         else {
-            print "You have to specify the id you want to be replaced.\n";
+            print " !! You have to specify the id you want to be replaced.\n";
             exit 5;
         }
     }
@@ -184,11 +185,11 @@ if ($ARGV[0]) {
                 add_content(0, $ARGV[1]);
             }
             else { 
-                print "$ARGV[1] is not a file, please specify a path to the article or comment file.\n"; 
+                print " !! $ARGV[1] is not a file, please specify a path to the article or comment file.\n"; 
             }
         }
         else {
-            print "You have to specify the path to the content file which should be checked.\n";
+            print " !! You have to specify the path to the content file which should be checked.\n";
             exit 6;
         }
     }
@@ -205,21 +206,21 @@ if ($ARGV[0]) {
                     tag_article($ARGV[1], $ARGV[2]);
                 }
                 else { 
-                   print "Please specify one or more tags.\n";
+                   print " !! Please specify one or more tags.\n";
                    exit 4;
                 }
             }
             else { 
-                print "$ARGV[1] is not a valid id, please specify a correct id.\n"; 
+                print " !! $ARGV[1] is not a valid id, please specify a correct id.\n"; 
             }
         }
         else {
-            print "You have to specify the id you want to be re-tagged.\n";
+            print " !! You have to specify the id you want to be re-tagged.\n";
             exit 5;
         }
     }
     else { 
-        print "You entered an unknown parameter, please check.\n"; 
+        print " !! You entered an unknown parameter, please check.\n"; 
     }
 }
 
@@ -233,10 +234,10 @@ if ($ARGV[0]) {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub push_bazinga {
-    die "please specify PUSH_HOST in config first" unless $CONF_HASH{'push_host'};
-    die "please specify PUSH_LOGIN in config first" unless $CONF_HASH{'push_login'};
-    die "please specify PUSH_PATH in config first" unless $CONF_HASH{'push_path'};
-    print "pushing to: " . $CONF_HASH{'push_host'} . " into directory " .
+    die " !! Please specify PUSH_HOST in config first!\n" unless $CONF_HASH{'push_host'};
+    die " !! Please specify PUSH_LOGIN in config first!\n" unless $CONF_HASH{'push_login'};
+    die " !! Please specify PUSH_PATH in config first!\n" unless $CONF_HASH{'push_path'};
+    print " >> Pushing to: " . $CONF_HASH{'push_host'} . " into directory " .
           $CONF_HASH{'push_path'} . "\n";
     print "Please enter your password (won't be echoed): ";
     system('stty','-echo');
@@ -249,7 +250,7 @@ sub push_bazinga {
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; mput -R *' | ncftp -u " .  $CONF_HASH{'push_login'} .
             " -p $password " . $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
-    print "push done!\n";
+    print " >> Push done!\n";
 }
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -274,6 +275,7 @@ sub print_usage {
         bzg tag ID "TAG1 TAG2 TAG3 ..."
         bzg check FILE
         bzg list
+        bzg export ID
         bzg update 
         bzg push
 
@@ -281,6 +283,7 @@ sub print_usage {
 
         bzg generate article > my_template_article.txt
         bzg generate page > my_template_page.txt
+        bzg export 67fa > backup_page.txt
         bzg add my_fancy_new_article.txt
         bzg add about_me_page.txt
         bzg replace 6783423 corrected_article.txt
@@ -336,16 +339,16 @@ sub add_content {
     else {
         $random = join ("", ('a' .. 'f', 0 .. 9)[map {rand (16)} (1 .. 16)] );
     }
-    open my $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
+    open my $CONTFD ,"< $content_file" or die " !! File could not be opened, please check permissions.\n";
     while (<$CONTFD>) {
         $BZG_HASH->{$1}{$random} = {} and $type = $1 and last if m/^category: *\"(articles|pages){1}\".*$/;
     }
     close $CONTFD;
     unless ($type) {
-        print "Content file is missing the 'category' param, please check and re-run.\n";
+        print " !! Content file is missing the 'category' param, please check and re-run.\n";
         exit;
     }
-    open $CONTFD ,"< $content_file" or die "File could not be opened, please check permissions.\n";
+    open $CONTFD ,"< $content_file" or die " !! File could not be opened, please check permissions.\n";
     while (<$CONTFD>) {
         if (/START_TEXT/ .. /END_TEXT/) {
             $BZG_HASH->{$type}{$random}{'text'} .= $_ if $_ !~ /.*(END_TEXT|START_TEXT){1}.*/ ;
@@ -359,20 +362,20 @@ sub add_content {
     my $correct = 1;
     for my $list_item (@{$needed_params{$type}}) {
         unless ( grep {/$list_item/} keys %{$BZG_HASH->{$type}{$random}}) {
-            print "argument '$list_item' is missing in content-file, exiting.\n";
+            print " !! Argument '$list_item' is missing in content-file, exiting.\n";
             $correct = 0;
         }
     }
     if ($correct) {
-        print "content file seems to be correct.\n";
+        print " >> Content file seems to be correct.\n";
     }
     else {
-        print "content file is corrupt, please check.\n";
+        print " !! Content file is corrupt, please check.\n";
         exit;
     }
     if ($add) {
         store $BZG_HASH, $BZG_FILE;
-        print "added '$random' to $type.\n";
+        print " >> Added '$random' to $type.\n";
     }
 }
 
@@ -387,7 +390,7 @@ sub add_content {
 
 sub export_content {
     my $export_id = shift;
-    my $key;
+    my $key =  0;
     if (exists $BZG_HASH->{'pages'}) {
         for $key (keys %{$BZG_HASH->{'pages'}}) {
             if ($key =~ m/^$export_id.*/) {
@@ -438,7 +441,7 @@ sub delete_content {
         for $key (keys %{$BZG_HASH->{'pages'}}) {
             if ($key =~ m/^$delete_id.*/) {
                 delete $BZG_HASH->{'pages'}{$key};
-                print "deleted page '$key'\n";
+                print " >> Deleted page '$key'\n";
             }
         }
     }
@@ -446,7 +449,7 @@ sub delete_content {
         for $key (keys %{$BZG_HASH->{'articles'}}) {
             if ($key =~ m/^$delete_id.*/) {
                 delete $BZG_HASH->{'articles'}{$key};
-                print "deleted article '$key'\n";
+                print " >> Deleted article '$key'\n";
             }
         }
     }
@@ -472,11 +475,11 @@ sub tag_article {
     }
     if (exists  $BZG_HASH->{'articles'}{$tag_complete}) {
         $BZG_HASH->{'articles'}{$tag_complete}{'tags'} = $tags;
-        print "re-tagged article '$tag_complete'.\n";
+        print " >> Tagged article '$tag_complete'.\n";
         store $BZG_HASH, $BZG_FILE;
     }
     else {
-        print "article $tag_id  doesn't exist, please check.\n";
+        print " !! Article $tag_id doesn't exist, please check.\n";
         exit 5;
     }
 }
@@ -508,7 +511,7 @@ sub replace_content {
         add_content(1, $path, $full_id);
     }
     else {
-        print "content with id $id doesn't exist, please check.\n";
+        print " !! Content with id $id doesn't exist, please check.\n";
         exit 5;
     }
 }
@@ -526,11 +529,12 @@ sub replace_content {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub update_bazinga {
+    print " >> Updating local bazinga directory.\n";
     system("rm -rf " . $CONF_HASH{'blog_directory'} . "/*");
     generate_tagpages();
     if (-e $CSS) {
         mkdir($CONF_HASH{'blog_directory'} . "/css");
-        copy($CSS, "$CONF_HASH{'blog_directory'}/css/style.css") or die "copy of css failed: $!\n";
+        copy($CSS, "$CONF_HASH{'blog_directory'}/css/style.css") or die " !! Copy of css failed: $!\n";
     }
     for my $section (keys %{$BZG_HASH}) {
         for (keys %{$BZG_HASH->{$section}}) { 
@@ -538,6 +542,7 @@ sub update_bazinga {
         }
     }
     generate_index();
+    print " >> Update complete.\n"
 }
 
 
