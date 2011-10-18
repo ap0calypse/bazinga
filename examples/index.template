@@ -6,14 +6,13 @@
     <head>
         <title>[BLOG_TITLE] - [BLOG_SUBTITLE]</title>
         <link rel="stylesheet" href="[STYLESHEET_LOCATION]"
-              type="text/css" title="Default Style" /
+              type="text/css" title="Default Style" />
     </head>
     <body>
         <div class='heading'>
             <h1>[BLOG_TITLE]</h1>
             <h2>[BLOG_SUBTITLE]</h2>
         </div>
-        <br />
         <div class='main'>
             <div class='menu'>
                 [MENU]

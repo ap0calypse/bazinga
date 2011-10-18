@@ -19,6 +19,7 @@ div.heading {
     padding: 10px;
     margin-left: auto;
     margin-right: auto;
+    margin-bottom: 10px;
     width: 950px;
     height: 80px;
     border: solid 1px #ddd;
