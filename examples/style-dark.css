@@ -1,12 +1,12 @@
 body {
-    font-family: 'Dina', 'Terminus', 'Courier New', monospace;
+    font-family: Verdana, Arial, Helvetica, sans-serif;
     font-size: 12px;
     background-color: #222;
-    color: #ddd;
+    color: #ccc;
 }
 
 a, a:active, a:visited {
-    color: #fff;
+    color: #ffc;
     text-decoration: none;
 }
 
@@ -25,6 +25,11 @@ div.heading {
     border: solid 1px #ddd;
 }
 
+div.rss {
+    float: right;
+    text-align: right;
+}
+
 pre.sourcecode {
     border: solid 1px #aaa;
     padding: 5px;
@@ -32,7 +37,6 @@ pre.sourcecode {
 }
 
 div.b_art_info {
-    font-family: 'Dina', 'Terminus', 'Courier New', monospace;
     font-size: 10px;
     background-color: #222;
     color: #aaa;
@@ -80,5 +84,4 @@ div.code {
     background-color: #ccc;
     padding: 5px;
     border: solid 1px #ddd;
-    font-family: 'Dina', 'Terminus', 'Courier New', monospace;
 }

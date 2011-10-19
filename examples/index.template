@@ -7,9 +7,12 @@
         <title>[BLOG_TITLE] - [BLOG_SUBTITLE]</title>
         <link rel="stylesheet" href="[STYLESHEET_LOCATION]"
               type="text/css" title="Default Style" />
+        <link rel="alternate" type="application/rss+xml"
+              title="RSS" href="[BLOG_WEBSITE]/feed.xml" />
     </head>
     <body>
         <div class='heading'>
+            <div class='rss'><a href='[BLOG_WEBSITE]/feed.xml'>get feed</a></div>
             <h1>[BLOG_TITLE]</h1>
             <h2>[BLOG_SUBTITLE]</h2>
         </div>

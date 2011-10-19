@@ -17,7 +17,7 @@ use v5.10;
 # version info, config locations, ...
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $VERSION = "0.3.1";
+my $VERSION = "0.3.2";
 my $CONFIG = "$HOME/.bazinga/bazinga.conf";
 my $CSS = "$HOME/.bazinga/style.css";
 my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
@@ -226,6 +226,46 @@ if ($ARGV[0]) {
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: create_feed
+# needs:    nothing
+# returns:  nothing
+# calls:    nothing
+# purpose:  updates the rss feed
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub create_feed {
+    my $feedfile = $CONF_HASH{'blog_directory'} . "/feed.xml";
+    open my $FEEDFD, "> $feedfile" or die " >> Can't open $feedfile: $!\n";
+    print $FEEDFD "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" .
+                  "<rss version=\"2.0\">\n" .
+                  "<channel>\n";
+    print $FEEDFD "<title>" . $CONF_HASH{'blog_title'} . "</title>\n";
+    print $FEEDFD "<link>" . $CONF_HASH{'blog_website'} . "</link>\n";
+    print $FEEDFD "<description>" . $CONF_HASH{'blog_subtitle'} . "</description>\n";
+    print $FEEDFD "<language>en</language>\n";
+    print $FEEDFD "<copyright>" . $CONF_HASH{'blog_owner'} . "</copyright>\n";
+    for (keys %{$BZG_HASH->{'articles'}}) {
+        print $FEEDFD "<item>\n";
+        print $FEEDFD "<title>" . $BZG_HASH->{'articles'}{$_}{'title'} . "</title>\n";
+        my ($year, $month, $day) = split (/-/, $BZG_HASH->{'articles'}{$_}{'date'});
+        my $link = $BZG_HASH->{'articles'}{$_}{'title'};
+        $link =~ s/ +/-/g;
+        $link =~ s/[^a-z0-9A-Z-]//g;
+        $link = lc(substr($link, 0, 30));
+        print $FEEDFD "<link>" .  $CONF_HASH{'blog_website'} . "/articles/$year/$month/$day/$link.html</link>\n";
+        print $FEEDFD "<author>" . $BZG_HASH->{'articles'}{$_}{'author'} . "</author>\n";
+        print $FEEDFD "<guid>" .  $CONF_HASH{'blog_website'} . "/articles/$year/$month/$day/$link.html</guid>\n";
+        print $FEEDFD "</item>\n";
+    }
+    print $FEEDFD "</channel>\n";
+    print $FEEDFD "</rss>\n";
+    close $FEEDFD;
+}
+
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # function: push_bazinga
 # needs:    ncftp
 # returns:  nothing
@@ -245,7 +285,7 @@ sub push_bazinga {
     system('stty','echo');
     print "\n";
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
-            $CONF_HASH{'push_path'} . "; rm -rf articles tags pages css index.html' | ncftp -u " .  $CONF_HASH{'push_login'} .
+            $CONF_HASH{'push_path'} . "; rm -rf articles tags pages css index.html feed.xml' | ncftp -u " .  $CONF_HASH{'push_login'} .
             " -p $password " . $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; mput -R *' | ncftp -u " .  $CONF_HASH{'push_login'} .
@@ -542,6 +582,7 @@ sub update_bazinga {
         }
     }
     generate_index();
+    create_feed();
     print " >> Update complete.\n"
 }
 
@@ -589,6 +630,9 @@ sub generate_file {
         }
         if ($line =~ m/\[BLOG_SUBTITLE\]/gmx) {
             $line =~ s/\[BLOG_SUBTITLE\]/$CONF_HASH{'blog_subtitle'}/gmx;
+        }
+        if ($line =~ m/\[BLOG_WEBSITE\]/gmx) {
+            $line =~ s/\[BLOG_WEBSITE\]/$CONF_HASH{'blog_website'}/gmx;
         }
         if ($line =~ m/\[STYLESHEET_LOCATION\]/gmx) {
             $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/\.\.\/\.\.\/\.\.\/css\/style.css/gmx if $type eq 'articles';
@@ -698,6 +742,9 @@ sub generate_index {
         }
         if ($line =~ m/\[BLOG_SUBTITLE\]/gmx) {
             $line =~ s/\[BLOG_SUBTITLE\]/$CONF_HASH{'blog_subtitle'}/gmx;
+        }
+        if ($line =~ m/\[BLOG_WEBSITE\]/gmx) {
+            $line =~ s/\[BLOG_WEBSITE\]/$CONF_HASH{'blog_website'}/gmx;
         }
         if ($line =~ m/\[STYLESHEET_LOCATION\]/gmx) {
             $line =~ s/\[STYLESHEET_LOCATION\]/\.\/css\/style.css/gmx;
