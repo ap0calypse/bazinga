@@ -245,7 +245,7 @@ sub push_bazinga {
     system('stty','echo');
     print "\n";
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
-            $CONF_HASH{'push_path'} . "; rm -rf *' | ncftp -u " .  $CONF_HASH{'push_login'} .
+            $CONF_HASH{'push_path'} . "; rm -rf articles tags pages css index.html' | ncftp -u " .  $CONF_HASH{'push_login'} .
             " -p $password " . $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; mput -R *' | ncftp -u " .  $CONF_HASH{'push_login'} .
