@@ -239,8 +239,9 @@ if ($ARGV[0]) {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub show_history {
-    my @cmd_ret = `cd $BAZDIR; git log --oneline -n20`;
+    my @cmd_ret = `cd $BAZDIR; git log --oneline -n20 2> /dev/null`;
     print "bazinga history (showing 20 latest changes):\n\n";
+    exit unless scalar @cmd_ret;
     for (@cmd_ret) {
         print " >> $_";
     }
