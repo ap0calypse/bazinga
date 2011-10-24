@@ -17,12 +17,13 @@ use v5.10;
 # version info, config locations, ...
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $VERSION = "0.3.2";
-my $CONFIG = "$HOME/.bazinga/bazinga.conf";
-my $CSS = "$HOME/.bazinga/style.css";
-my $BZG_FILE = "$HOME/.bazinga/bazinga.dat";
-my $TMP_LOCATION = "$HOME/.bazinga/temp";
-my $TEMPLATEFILE = "$HOME/.bazinga/index.template";
+my $VERSION = "0.3.3";
+my $BAZDIR = "$HOME/.bazinga";
+my $CONFIG = "$BAZDIR/bazinga.conf";
+my $CSS = "$BAZDIR/style.css";
+my $BZG_FILE = "$BAZDIR/bazinga.dat";
+my $TMP_LOCATION = "$BAZDIR/temp";
+my $TEMPLATEFILE = "$BAZDIR/index.template";
 my %CONF_HASH;
 my %TAG_HASH;
 
@@ -199,6 +200,9 @@ if ($ARGV[0]) {
     elsif ($ARGV[0] eq "push") {
         push_bazinga();
     }
+    elsif ($ARGV[0] eq "history") {
+        show_history();
+    }
     elsif ($ARGV[0] eq "tag") {
         if ($ARGV[1]) {
             if ($ARGV[1] =~ m/[[:alnum:]]{1,16}/) {
@@ -223,6 +227,54 @@ if ($ARGV[0]) {
         print " !! You entered an unknown parameter, please check.\n"; 
     }
 }
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: show_history
+# needs:    nothing
+# returns:  nothing
+# calls:    nothing
+# purpose:  shows a pretty oneline from git
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub show_history {
+    my @cmd_ret = `cd $BAZDIR; git log --oneline -n20`;
+    print "bazinga history (showing 20 latest changes):\n\n";
+    for (@cmd_ret) {
+        print " >> $_";
+    }
+    print "\n";
+}
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: update_git
+# needs:    nothing
+# returns:  nothing
+# calls:    nothing
+# purpose:  updates git in $BAZDIR
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub update_git {
+    my ($title, $action) = @_;
+    if (-d "$BAZDIR/.git") {
+        my $date = localtime; 
+        `cd $BAZDIR; git add bazinga.dat; git commit -m '$date - $action - $title'`;
+    }
+    else {
+        my $ret = `cd $BAZDIR; git init`;
+        open my $GITFD, ">> $BAZDIR/.git/config" or die " !! error $!";
+        print $GITFD "\n[user]\n\tname = bazinga\n";
+        close $GITFD;
+        open my $IGFD, "> $BAZDIR/.gitignore" or die " !! error $!";
+        print $IGFD "*.*\n!bazinga.dat\n";
+        close $IGFD;
+        update_git($title, $action);
+    }
+}
+
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -317,6 +369,7 @@ sub print_usage {
         bzg list
         bzg export ID
         bzg update 
+        bzg history 
         bzg push
 
     examples:
@@ -414,6 +467,7 @@ sub add_content {
         exit;
     }
     if ($add) {
+        update_git($BZG_HASH->{$type}{$random}{'title'}, "added");
         store $BZG_HASH, $BZG_FILE;
         print " >> Added '$random' to $type.\n";
     }
@@ -480,20 +534,23 @@ sub delete_content {
     if (exists $BZG_HASH->{'pages'}) {
         for $key (keys %{$BZG_HASH->{'pages'}}) {
             if ($key =~ m/^$delete_id.*/) {
+                update_git($BZG_HASH->{'pages'}{$key}{'title'}, "deleted");
                 delete $BZG_HASH->{'pages'}{$key};
                 print " >> Deleted page '$key'\n";
+                store $BZG_HASH, $BZG_FILE;
             }
         }
     }
     if (exists $BZG_HASH->{'articles'}) {
         for $key (keys %{$BZG_HASH->{'articles'}}) {
             if ($key =~ m/^$delete_id.*/) {
+                update_git($BZG_HASH->{'articles'}{$key}{'title'}, "deleted");
                 delete $BZG_HASH->{'articles'}{$key};
                 print " >> Deleted article '$key'\n";
+                store $BZG_HASH, $BZG_FILE;
             }
         }
     }
-    store $BZG_HASH, $BZG_FILE;
 }
 
 
@@ -516,6 +573,7 @@ sub tag_article {
     if (exists  $BZG_HASH->{'articles'}{$tag_complete}) {
         $BZG_HASH->{'articles'}{$tag_complete}{'tags'} = $tags;
         print " >> Tagged article '$tag_complete'.\n";
+        update_git($BZG_HASH->{'articles'}{$tag_complete}{'title'}, "tagged");
         store $BZG_HASH, $BZG_FILE;
     }
     else {
