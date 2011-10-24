@@ -421,11 +421,11 @@ sub add_content {
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# function: delete content
+# function: export_content
 # needs:    valid id from a page / article
 # returns:  nothing
 # calls:    nothing
-# purpose:  deletes any content and the corresponding id from the index
+# purpose:  exports pages or articlesx
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub export_content {
