@@ -17,7 +17,7 @@ use v5.10;
 # version info, config locations, ...
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $VERSION = "0.3.3";
+my $VERSION = "0.3.4";
 my $BAZDIR = "$HOME/.bazinga";
 my $CONFIG = "$BAZDIR/bazinga.conf";
 my $CSS = "$BAZDIR/style.css";
@@ -127,6 +127,20 @@ if ($ARGV[0]) {
             exit 2;
         }
     }
+    elsif ($ARGV[0] eq "reset") {
+        if ($ARGV[1]) {
+            if ($ARGV[1] =~ m/[[:alnum:]]{1,32}/) {
+                git_reset($ARGV[1]);
+            }
+            else { 
+                print " !! $ARGV[1] is not a valid git-hash, please specify a correct hash.\n"; 
+            }
+        }
+        else {
+            print " !! You have to specify a valid git-hash, see 'bzg history'.\n";
+            exit 6;
+        }
+    }
     elsif ($ARGV[0] eq "delete") {
         if ($ARGV[1]) {
             if ($ARGV[1] =~ m/[[:alnum:]]{1,16}/) {
@@ -225,6 +239,32 @@ if ($ARGV[0]) {
     }
     else { 
         print " !! You entered an unknown parameter, please check.\n"; 
+    }
+}
+
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: reset_git
+# needs:    nothing
+# returns:  nothing
+# calls:    nothing
+# purpose:  does a git reset --hard
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub git_reset {
+    my $githash = shift;
+    print " !! Please keep in mind, that a reset is permanent and can't be undone. You have been warned...\n";
+    print " >> Do you really want to reset the state to this mark: $githash ?\n";
+    print " [Y/N] << ";
+    chomp (my $answer = <STDIN>);
+    if ($answer eq 'Y') {
+        print " >> resetting state\n";
+        `cd $BAZDIR; git reset --hard $githash`;
+        print " >> done!\n";
+    }
+    else {
+        exit(0);
     }
 }
 
