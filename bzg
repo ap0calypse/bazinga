@@ -778,7 +778,7 @@ sub generate_file {
         if ($line =~ m/\[CONTENT\]/gmx) {
             if ($type ne "tags") {
                 $line =~ s/\[CONTENT\]//gmx;
-                $line .= "<div class='onecont'><h2>$BZG_HASH->{$type}{$id}{'title'}</h2>";
+                $line .= "<div class='onecont'><h2> :: $BZG_HASH->{$type}{$id}{'title'}</h2>";
                 $line .= convert_text($BZG_HASH->{$type}{$id}{'text'}, $id);
             }
             else {
@@ -894,7 +894,7 @@ sub generate_index {
                     $dirstring =~ s/ +/-/g;
                     $dirstring =~ s/[^a-z0-9A-Z-]//g;
                     $dirstring = lc(substr($dirstring, 0, 30));
-                    $line .= "<div class='onecont'><h2><a href='./articles/$year/$month/$day/$dirstring.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
+                    $line .= "<div class='onecont'><h2> :: <a href='./articles/$year/$month/$day/$dirstring.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
                     $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'}, $id, "index");
                     $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{'articles'}{$id}{'author'} . 
                              " in " . join(", ", split / /, $BZG_HASH->{'articles'}{$id}{'tags'}) . " on <i>" .
