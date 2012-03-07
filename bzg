@@ -777,12 +777,12 @@ sub generate_file {
         if ($line =~ m/\[CONTENT\]/gmx) {
             if ($type ne "tags") {
                 $line =~ s/\[CONTENT\]//gmx;
-                $line .= "<h2>$BZG_HASH->{$type}{$id}{'title'}</h2>";
+                $line .= "<div class='onecont'><h2>$BZG_HASH->{$type}{$id}{'title'}</h2>";
                 $line .= convert_text($BZG_HASH->{$type}{$id}{'text'}, $id);
             }
             else {
                 $line =~ s/\[CONTENT\]//gmx;
-                $line .= "<h2>Articles with tag: $id</h2>";
+                $line .= "<div class='onecont'><h2>Articles with tag: $id</h2>";
                 for (@{$TAG_HASH{$id}}) {
                     my $dirstring = $BZG_HASH->{'articles'}{$_}{'title'};
                     ($year, $month, $day) = split (/-/, $BZG_HASH->{'articles'}{$_}{'date'});
@@ -800,18 +800,19 @@ sub generate_file {
                              $BZG_HASH->{'articles'}{$_}{'title'} .
                              "</a></p>" unless $line eq 'articles';
                 }
+                $line .= "</div>";
             }
             if ($type eq 'articles') {
             $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{$type}{$id}{'author'} . 
                      " in " . join(", ", split / /, $BZG_HASH->{$type}{$id}{'tags'}) . " on <i>" .
                      $BZG_HASH->{$type}{$id}{'date'} . " " . $BZG_HASH->{$type}{$id}{'time'} .
-                     "</i></div>";
+                     "</i></div></div>";
             }
             elsif ($type eq 'pages') {
             $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{$type}{$id}{'author'} . 
                      " on <i>" .
                      $BZG_HASH->{$type}{$id}{'date'} . " " . $BZG_HASH->{$type}{$id}{'time'} .
-                     "</i></div>";
+                     "</i></div></div>";
             }
         }
 
@@ -892,12 +893,12 @@ sub generate_index {
                     $dirstring =~ s/ +/-/g;
                     $dirstring =~ s/[^a-z0-9A-Z-]//g;
                     $dirstring = lc(substr($dirstring, 0, 30));
-                    $line .= "<h2><a href='./articles/$year/$month/$day/$dirstring.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
+                    $line .= "<div class='onecont'><h2><a href='./articles/$year/$month/$day/$dirstring.html'>$BZG_HASH->{'articles'}{$id}{'title'}</a></h2>";
                     $line .= convert_text($BZG_HASH->{'articles'}{$id}{'text'}, $id, "index");
                     $line .= "<div class='b_art_info'>posted by " . $BZG_HASH->{'articles'}{$id}{'author'} . 
                              " in " . join(", ", split / /, $BZG_HASH->{'articles'}{$id}{'tags'}) . " on <i>" .
                              $BZG_HASH->{'articles'}{$id}{'date'} . " " . $BZG_HASH->{'articles'}{$id}{'time'} .
-                             "</i></div>";
+                             "</i></div></div>";
                 }
             }
         }
@@ -1031,8 +1032,8 @@ sub convert_text {
         }
         elsif ($in_code) {
             $_ =~ s/'/´/gmx;
-            $finaltext .= `echo '$_' | highlight -s 'vampire' -I -f -l -m $line_number --inline-css -S $code_lang` if $want_ln;
-            $finaltext .= `echo '$_' | highlight -s 'vampire' -I -f --inline-css -S $code_lang` unless $want_ln;
+            $finaltext .= `echo '$_' | highlight -s 'bclear' -I -f -l -m $line_number --inline-css -S $code_lang` if $want_ln;
+            $finaltext .= `echo '$_' | highlight -s 'bclear' -I -f --inline-css -S $code_lang` unless $want_ln;
             $line_number++;
         }
         elsif ($in_gnuplot) {

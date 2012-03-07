@@ -1,0 +1,97 @@
+body {
+    font-family: monospace, Verdana, Arial, Helvetica, sans-serif;
+    font-size: 14px;
+    background-color: #ccc;
+    color: #222;
+}
+
+div.content h2 {
+    padding-top: 15px;
+}
+
+a, a:active, a:visited {
+    color: #000;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #555;
+    text-decoration: none;
+}
+
+
+div.onecont {
+    float: left;
+    border: solid 1px #222;
+    padding: 10px;
+    width: 725px;
+    margin-bottom: 10px;
+}
+
+div.heading {
+    padding: 10px;
+    margin-left: 50px;
+    margin-right: auto;
+    margin-bottom: 10px;
+    width: 950px;
+    height: 80px;
+    border: solid 1px #222;
+}
+
+div.rss {
+    float: right;
+    text-align: right;
+}
+
+pre.sourcecode {
+    border: solid 1px #aaa;
+    padding: 5px;
+    background: #bbb;
+}
+
+div.b_art_info {
+    font-size: 10px;
+    background-color: #ddd;
+    color: #222;
+    border: solid 1px #aaa;
+    padding: 4px;
+}
+
+
+div.menu {
+    float: left;
+    width: 190px;
+    height: 500px;
+    border: solid 1px #222;
+    padding: 10px;
+}
+
+div.menupoint {
+    border: solid 1px #aaa;
+    padding: 5px;
+    background: #ddd;
+    font-size: 12px;
+    color: #000;
+    font-weight: bold;
+}
+
+div.content {
+    margin-left: 10px;
+    float: left;
+    width: 725px;
+    min-height: 500px;
+}
+
+div.main {
+    margin-left: 50px;
+    margin-right: auto;
+    width: 970px;
+}
+
+div.code {
+    margin-left: 10px;
+    margin-right: 10px;
+    background-color: #eee;
+    padding: 5px;
+    border: solid 1px #222;
+}
