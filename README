@@ -79,6 +79,7 @@ Here is a list of the prerequisites:
     - ncftp (for ftp push function)
     - gnuplot
     - convert (provided by ImageMagick)
+    - git (needed for history and reset functions)
 
 For perfect user experience I recommend installing all these packages.
 

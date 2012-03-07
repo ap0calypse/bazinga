@@ -255,8 +255,8 @@ if ($ARGV[0]) {
 sub git_reset {
     my $githash = shift;
     print " !! Please keep in mind, that a reset is permanent and can't be undone. You have been warned...\n";
-    print " >> Do you really want to reset the state to this mark: $githash ?\n";
-    print " [Y/N] << ";
+    print " >> Do you really want to reset the state to this mark: $githash ? (Y/N)\n";
+    print " << ";
     chomp (my $answer = <STDIN>);
     if ($answer eq 'Y') {
         print " >> resetting state\n";
@@ -279,8 +279,8 @@ sub git_reset {
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 sub show_history {
-    my @cmd_ret = `cd $BAZDIR; git log --oneline -n20 2> /dev/null`;
-    print "bazinga history (showing 20 latest changes):\n\n";
+    my @cmd_ret = `cd $BAZDIR; git log --oneline -n50 2> /dev/null`;
+    print "bazinga history (showing 50 latest changes):\n\n";
     exit unless scalar @cmd_ret;
     for (@cmd_ret) {
         print " >> $_";
@@ -411,6 +411,7 @@ sub print_usage {
         bzg export ID
         bzg update 
         bzg history 
+        bzg reset GIT-ID 
         bzg push
 
     examples:
