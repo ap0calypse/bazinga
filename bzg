@@ -747,17 +747,14 @@ sub generate_file {
             for (sort keys %{$BZG_HASH}) {
                 $line .= "<div class='menupoint'>$_</div>\n";
                 if ($_ eq 'articles') {
-                    $line .= "<ul>\n";
                     for my $tags (sort keys %TAG_HASH) {
-                        $line .= "<li><a href='../../../../tags/$tags.html'>" if $type eq 'articles';
-                        $line .= "<li><a href='../tags/$tags.html'>" unless $type eq 'articles';
+                        $line .= "<div class='menuentry'><a href='../../../../tags/$tags.html'>" if $type eq 'articles';
+                        $line .= "<div class='menuentry'><a href='../tags/$tags.html'>" unless $type eq 'articles';
                         $line .= $tags . "</a><div style='float: right;'>( " . scalar @{$TAG_HASH{$tags}} . 
-                                 " )</div></li>\n";
+                                 " )</div></div>\n";
                     }
-                    $line .= "</ul>\n";
                 }
                 elsif ($_ eq 'pages') {
-                    $line .= "<ul>\n";
                     for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} 
                                         keys %{$BZG_HASH->{'pages'}}) {
                         my $dirstring = $BZG_HASH->{'pages'}{$pageid}{'title'};
@@ -765,13 +762,12 @@ sub generate_file {
                         $dirstring =~ s/[^a-z0-9A-Z-]//g;
                         $dirstring = lc(substr($dirstring, 0, 30));
 
-                        $line .= "<li><a href='../../../../pages/$dirstring.html'>" . 
-                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n" if $type eq 'articles';
-                        $line .= "<li><a href='../pages/$dirstring.html'>" . 
-                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n" unless $type eq 'articles';
+                        $line .= "<div class='menuentry'><a href='../../../../pages/$dirstring.html'>" . 
+                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></div>\n" if $type eq 'articles';
+                        $line .= "<div class='menuentry'><a href='../pages/$dirstring.html'>" . 
+                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></div>\n" unless $type eq 'articles';
                     
                     }
-                    $line .= "</ul>\n";
                 }
             }
         }
@@ -857,16 +853,13 @@ sub generate_index {
             for (sort keys %{$BZG_HASH}) {
                 $line .= "<div class='menupoint'>$_</div>\n";
                 if ($_ eq 'articles') {
-                    $line .= "<ul>\n";
                     for my $tags (sort keys %TAG_HASH) {
-                        $line .= "<li><a href='./tags/$tags.html'>" .
+                        $line .= "<div class='menuentry'><a href='./tags/$tags.html'>" .
                                  $tags . "</a><div style='float: right;'>( " . scalar @{$TAG_HASH{$tags}} . 
-                                 " )</div></li>\n";
+                                 " )</div></div>\n";
                     }
-                    $line .= "</ul>\n";
                 }
                 elsif ($_ eq 'pages') {
-                    $line .= "<ul>\n";
                     for my $pageid (sort {$BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'}} 
                                         keys %{$BZG_HASH->{'pages'}}) {
                         my $dirstring = $BZG_HASH->{'pages'}{$pageid}{'title'};
@@ -874,11 +867,10 @@ sub generate_index {
                         $dirstring =~ s/[^a-z0-9A-Z-]//g;
                         $dirstring = lc(substr($dirstring, 0, 30));
 
-                        $line .= "<li><a href='./pages/$dirstring.html'>" . 
-                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></li>\n";
+                        $line .= "<div class='menuentry'><a href='./pages/$dirstring.html'>" . 
+                                 $BZG_HASH->{'pages'}{$pageid}{'title'} . "</a></div>\n";
                     
                     }
-                    $line .= "</ul>\n";
                 }
             }
         }
