@@ -212,6 +212,7 @@ For example, we want to add a new article based on a template:
 
 Special thanks to Linus Torvalds for creating git. It helped me a lot.
 Thanks to the people over there at nanoblogger.
+Thanks to Andre Simon for creating highlight.
 Thanks to stefan-k for giving me the hint with the LaTeX- and gnuplot-integration :).
 
 4.1. LICENSE
