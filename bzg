@@ -337,7 +337,8 @@ sub create_feed {
     print $FEEDFD "<description>" . $CONF_HASH{'blog_subtitle'} . "</description>\n";
     print $FEEDFD "<language>en</language>\n";
     print $FEEDFD "<copyright>" . $CONF_HASH{'blog_owner'} . "</copyright>\n";
-    for (keys %{$BZG_HASH->{'articles'}}) {
+    # WHY DOES THIS NOT WORK !?!?
+    for (sort { $BZG_HASH->{'articles'}{$b}{'date'} cmp $BZG_HASH->{'articles'}{$a}{'date'} } keys %{$BZG_HASH->{'articles'}}) {
         print $FEEDFD "<item>\n";
         print $FEEDFD "<title>" . $BZG_HASH->{'articles'}{$_}{'title'} . "</title>\n";
         my ($year, $month, $day) = split (/-/, $BZG_HASH->{'articles'}{$_}{'date'});
