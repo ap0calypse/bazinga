@@ -1,6 +1,5 @@
 #!/usr/bin/perl
 use strict;
-use warnings;
 use File::Copy;
 use Storable;
 use Env qw(HOME USERNAME);
@@ -736,6 +735,9 @@ sub generate_file {
         if ($line =~ m/\[BLOG_WEBSITE\]/gmx) {
             $line =~ s/\[BLOG_WEBSITE\]/$CONF_HASH{'blog_website'}/gmx;
         }
+        if ($line =~ m/\[META_TITLE\]/gmx) {
+            $line =~ s/\[META_TITLE\]/$BZG_HASH->{$type}{$id}{'title'}/gmx;
+        }
         if ($line =~ m/\[STYLESHEET_LOCATION\]/gmx) {
             $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/\.\.\/\.\.\/\.\.\/css\/style.css/gmx if $type eq 'articles';
             $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/css\/style.css/gmx unless $type eq 'articles';
@@ -836,6 +838,9 @@ sub generate_index {
     open my $TEMPLATE, "< $TEMPLATEFILE" or die "$!";
     my %date_hash;
     while (my $line = <$TEMPLATE>) {
+        if ($line =~ m/\[META_TITLE\]/gmx) {
+            $line =~ s/\[META_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
+        }
         if ($line =~ m/\[BLOG_TITLE\]/gmx) {
             $line =~ s/\[BLOG_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
         }
