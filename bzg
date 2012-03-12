@@ -346,7 +346,7 @@ sub create_feed {
         $link = lc(substr($link, 0, 30));
         print $FEEDFD "<link>" .  $CONF_HASH{'blog_website'} . "/articles/$year/$month/$day/$link.html</link>\n";
         print $FEEDFD "<author>" . $BZG_HASH->{'articles'}{$_}{'author'} . "</author>\n";
-        print $FEEDFD "<description>" . $BZG_HASH->{'articles'}{$_}{'title'} . "</description>\n";
+        print $FEEDFD "<description>" . conv2meta($BZG_HASH->{'articles'}{$_}{'text'}) . "</description>\n";
         print $FEEDFD "<pubDate>" . $BZG_HASH->{'articles'}{$_}{'date'} . "</pubDate>\n";
         print $FEEDFD "<guid>" .  $CONF_HASH{'blog_website'} . "/articles/$year/$month/$day/$link.html</guid>\n";
         print $FEEDFD "</item>\n";
