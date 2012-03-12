@@ -736,7 +736,11 @@ sub generate_file {
             $line =~ s/\[BLOG_WEBSITE\]/$CONF_HASH{'blog_website'}/gmx;
         }
         if ($line =~ m/\[META_TITLE\]/gmx) {
-            $line =~ s/\[META_TITLE\]/$BZG_HASH->{$type}{$id}{'title'}/gmx;
+            $line =~ s/\[META_TITLE\]/$BZG_HASH->{$type}{$id}{'title'} - $CONF_HASH{'blog_title'}/gmx;
+        }
+        if ($line =~ m/\[META_DESCRIPTION\]/gmx) {
+            my $newtext = conv2meta($BZG_HASH->{$type}{$id}{'text'});
+            $line =~ s/\[META_DESCRIPTION\]/$newtext/gmx;
         }
         if ($line =~ m/\[STYLESHEET_LOCATION\]/gmx) {
             $line =~ s/\[STYLESHEET_LOCATION\]/\.\.\/\.\.\/\.\.\/\.\.\/css\/style.css/gmx if $type eq 'articles';
@@ -839,7 +843,11 @@ sub generate_index {
     my %date_hash;
     while (my $line = <$TEMPLATE>) {
         if ($line =~ m/\[META_TITLE\]/gmx) {
-            $line =~ s/\[META_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
+            $line =~ s/\[META_TITLE\]/$CONF_HASH{'blog_title'} - $CONF_HASH{'blog_subtitle'}/gmx;
+        }
+        if ($line =~ m/\[META_DESCRIPTION\]/gmx) {
+            my $newtext = conv2meta($CONF_HASH{'blog_subtitle'});
+            $line =~ s/\[META_DESCRIPTION\]/$newtext/gmx;
         }
         if ($line =~ m/\[BLOG_TITLE\]/gmx) {
             $line =~ s/\[BLOG_TITLE\]/$CONF_HASH{'blog_title'}/gmx;
@@ -1066,6 +1074,25 @@ sub convert_text {
     }
 
     return $finaltext;
+}
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# function: conv2meta 
+# needs:    text
+# returns:  html-safe text
+# calls:    nothing
+# purpose:  strips down everything from the text that isn't safe 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+sub conv2meta {
+    my $text = shift;
+    $text =~ s/<[^>]*>//gs;
+    $text =~ s/"//gs;
+    $text =~ s/'//gs;
+    $text = substr($text, 0, 90);
+    $text .= " ...";
+    return $text;
 }
 
 
