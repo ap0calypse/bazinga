@@ -77,6 +77,7 @@ while (<$CONFFD>) {
     $CONF_HASH{'push_host'} = $1 if m/.*PUSH_HOST: *\"(.+)\".*/;
     $CONF_HASH{'push_login'} = $1 if m/.*PUSH_LOGIN: *\"(.+)\".*/;
     $CONF_HASH{'push_path'} = $1 if m/.*PUSH_PATH: *\"(.+)\".*/;
+    $CONF_HASH{'push_port'} = $1 if m/.*PUSH_PORT: *\"(.+)\".*/;
 }
 close $CONFFD;
 
@@ -371,6 +372,7 @@ sub push_bazinga {
     die " !! Please specify PUSH_HOST in config first!\n" unless $CONF_HASH{'push_host'};
     die " !! Please specify PUSH_LOGIN in config first!\n" unless $CONF_HASH{'push_login'};
     die " !! Please specify PUSH_PATH in config first!\n" unless $CONF_HASH{'push_path'};
+    my $port = 21 unless $CONF_HASH{'push_port'};
     print " >> Pushing to: " . $CONF_HASH{'push_host'} . " into directory " .
           $CONF_HASH{'push_path'} . "\n";
     print "Please enter your password (won't be echoed): ";
@@ -380,10 +382,10 @@ sub push_bazinga {
     print "\n";
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; rm -rf articles tags pages css index.html feed.xml' | ncftp -u " .  $CONF_HASH{'push_login'} .
-            " -p $password " . $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
+            " -p $password " . $CONF_HASH{'push_host'} . " -P " .  $CONF_HASH{'push_port'} . " > /dev/null 2> /dev/null;");
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; mput -R *' | ncftp -u " .  $CONF_HASH{'push_login'} .
-            " -p $password " . $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
+            " -p $password " . $CONF_HASH{'push_host'} . " -P " .  $CONF_HASH{'push_port'} . " > /dev/null 2> /dev/null;");
     print " >> Push done!\n";
 }
 
@@ -753,7 +755,9 @@ sub generate_file {
             $line .= "<div class='menupoint'><a href='../index.html'>" .
                      "main page</a></div><br />\n" unless $type eq 'articles';
             for (sort keys %{$BZG_HASH}) {
-                $line .= "<div class='menupoint'>$_</div>\n";
+                next if $_ eq 'tags';
+                $line .= "<div class='menupoint'>tags</div>\n" if $_ eq 'articles';
+                $line .= "<div class='menupoint'>$_</div>\n" unless $_ eq 'articles';
                 if ($_ eq 'articles') {
                     for my $tags (sort keys %TAG_HASH) {
                         $line .= "<div class='menuentry'><a href='../../../../tags/$tags.html'>" if $type eq 'articles';
@@ -866,7 +870,9 @@ sub generate_index {
             $line .= "<div class='menupoint'><a href='./index.html'>" .
                      "main page</a></div><br />\n";
             for (sort keys %{$BZG_HASH}) {
-                $line .= "<div class='menupoint'>$_</div>\n";
+                next if $_ eq 'tags';
+                $line .= "<div class='menupoint'>tags</div>\n" if $_ eq 'articles';
+                $line .= "<div class='menupoint'>$_</div>\n" unless $_ eq 'articles';
                 if ($_ eq 'articles') {
                     for my $tags (sort keys %TAG_HASH) {
                         $line .= "<div class='menuentry'><a href='./tags/$tags.html'>" .
