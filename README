@@ -20,18 +20,12 @@ README file for bazinga
 
 1. WHAT IS BAZINGA?
 
-bazinga is a small and (maybe) simple commandline interface which lets you publish articles
-on a blog without the need of PHP/MySQL or CGI. It produces plain HTML-files in a clean and
-reasonable directory structure and links them together. This seems quite static at a first 
-look, but the advantages of this model are clear: you don't need a webhoster which allows
-previously mentioned features. The pages produced should be 100 % display-able by any common
-HTTP server.
+bazinga is a small and (maybe) simple commandline interface which lets you publish articles on a blog without the need of PHP/MySQL or CGI. It produces plain HTML-files in a clean and reasonable directory structure and links them together. This seems quite static at a first look, but the advantages of this model are clear: you don't need a webhoster which allows previously mentioned features. The pages produced should be 100 % display-able by any common HTTP server.
 
 
 1.1. WHY IS IT BETTER THAN XYZ?
 
-To be honest, it clearly isn't better than any other blog software and maybe cannot even 
-compete with them in flexibility and feature-richness, but the clear advantages are:
+To be honest, it clearly isn't better than any other blog software and maybe cannot even compete with them in flexibility and feature-richness, but the clear advantages are:
 
     - completely independent from fancy features (eq. PHP)
     - easy to maintain
@@ -39,37 +33,23 @@ compete with them in flexibility and feature-richness, but the clear advantages 
     - commandline interface ('bzg') (that's where git and nanoblogger inspired me)
     - LaTeX- and gnuplot-integration
 
-Of course, if you aren't used to work with terminals or generally with text editors
-it might be confusing, but if you are a person like me (and I guess you are, otherwise:
-why are you reading this crap anyway?) and you like working on terminals, it might be
-just the piece of software you always wanted.
+Of course, if you aren't used to work with terminals or generally with text editors it might be confusing, but if you are a person like me (and I guess you are, otherwise: why are you reading this crap anyway?) and you like working on terminals, it might be just the piece of software you always wanted.
 
 
 1.2. NAME
 
-I chose the name bazinga because I'm a huge fan of the TV series 'Big Bang Theory', where
-one of the main characters (Sheldon Cooper) uses the phrase "Bazinga!" to tell others that he
-made a joke. Clearly, bazinga is a little bit of a joke too ;).
+I chose the name bazinga because I'm a huge fan of the TV series 'Big Bang Theory', where one of the main characters (Sheldon Cooper) uses the phrase "Bazinga!" to tell others that he made a joke. Clearly, bazinga is a little bit of a joke too ;).
 
 
 2. SETUP
 
-Setup is pretty easy. If you read this you might already as well have installed it. It
-doesn't need to be located anywhere special. The only files that need to be in the right
-place is the main configuration file, the index.template and the style.css which must be 
-located in "~/.bazinga/" or equally symlinked to this location. Some sample configuration 
-files can be found in the examples/ directory. All the data will be stored in a file 
-called "~/.bazinga/bazinga.dat". It is a perlish stored variable and won't be easy to read. 
-It can be backed up whenever you want. (eg. put it in your dropbox account or whatever)
+Setup is pretty easy. If you read this you might already as well have installed it. It doesn't need to be located anywhere special. The only files that need to be in the right place is the main configuration file, the index.template and the style.css which must be located in "~/.bazinga/" or equally symlinked to this location. Some sample configuration files can be found in the examples/ directory. All the data will be stored in a file called "~/.bazinga/bazinga.dat". It is a perlish stored variable and won't be easy to read. It can be backed up whenever you want. (eg. put it in your dropbox account or whatever)
 
 2.1 PREREQUISITES
 
-bazinga depends on some other programs to run. Be sure to have them installed before
-you complain about problems which could have been avoided by reading the README ;).
+bazinga depends on some other programs to run. Be sure to have them installed before you complain about problems which could have been avoided by reading the README ;).
 
-There is currently no windows version available, and I guess there will never be one.
-Mostly because I don't work with it. If anyone wants to port it to Windows, he is 
-on his own, because I won't support this crap.
+There is currently no windows version available, and I guess there will never be one. Mostly because I don't work with it. If anyone wants to port it to Windows, he is on his own, because I won't support this crap.
 
 Here is a list of the prerequisites:
 
@@ -86,16 +66,12 @@ For perfect user experience I recommend installing all these packages.
 
 2.2. CONFIGURATION
 
-The easiest way to get everything started is to copy the example configuration, the style.css 
-and the index.template from the examples/ directory to ~/.bazinga/ and edit it to fit your needs. 
-The configuration file has to be named "bazinga.conf", the stylesheet "style.css" and the template
-"index.template". Configuration should be pretty self-explaining.
+The easiest way to get everything started is to copy the example configuration, the style.css and the index.template from the examples/ directory to ~/.bazinga/ and edit it to fit your needs. The configuration file has to be named "bazinga.conf", the stylesheet "style.css" and the template "index.template". Configuration should be pretty self-explaining.
 
 
 2.3. DIRECTORY STRUCTURE
 
-Once you edited your bazinga.conf with the needed information and you added an article or page,
-you can update your blog structure with "bzg update". This will create the following similar structure:
+Once you edited your bazinga.conf with the needed information and you added an article or page, you can update your blog structure with "bzg update". This will create the following similar structure:
 
 blog/
   -> index.html
@@ -117,14 +93,9 @@ blog/
 
 3. FEATURES
 
-bazinga doesn't have many features except some basic text-formatting rules, which can be
-taken from the examples/ directory. These examples should cover the range of what is
-possible. If you have feature requests or want something added, please contact me or 
-implement it yourself and send me a patch. Would be awesome.
+bazinga doesn't have many features except some basic text-formatting rules, which can be taken from the examples/ directory. These examples should cover the range of what is possible. If you have feature requests or want something added, please contact me or implement it yourself and send me a patch. Would be awesome.
 
-At the moment, it is possible to insert code-snippets (see explanation below).
-The coolest feature however is the automatic conversion of LaTeX-formulae into images,
-which then are inserted instead.
+At the moment, it is possible to insert code-snippets (see explanation below). The coolest feature however is the automatic conversion of LaTeX-formulae into images, which then are inserted instead.
 
 
 3.1. KEYWORDS
@@ -138,8 +109,7 @@ Just use simple HTML formatting rules like <b>, <br />, <i>, ...
 
 3.1.2. LATEX-INSERTION
 
-If you want to include LaTeX-formulae, it is very simple. bazinga will use everything between
-LATEX_START and LATEX_END, converts it to png and inserts it instead. For example:
+If you want to include LaTeX-formulae, it is very simple. bazinga will use everything between LATEX_START and LATEX_END, converts it to png and inserts it instead. For example:
 
 LATEX_START
 $\sum$
@@ -148,21 +118,18 @@ LATEX_END
 
 3.1.3. GNUPLOT-INSERTION
 
-With gnuplot formulae it is the same as with LaTeX. You just enter the wanted things between
-GNUPLOT_START and GNUPLOT_END.
+With gnuplot formulae it is the same as with LaTeX. You just enter the wanted things between GNUPLOT_START and GNUPLOT_END.
 
 
 3.1.4. CODE-INSERTION
 
-To insert code, you can either use <code>text</code> or use the bazinga-style with the CODE-segment.
-To illustrate this, here is an example:
+To insert code, you can either use <code>text</code> or use the bazinga-style with the CODE-segment. To illustrate this, here is an example:
 
 CODE_START=perl=ln
 print "hello world\n";
 CODE_END
 
-This prints a formatted colorful hello world with line-numbers (ln). The first argument after the '='
-has to be a valid programming language parseable by highlight (http://www.andre-simon.de/doku/highlight/highlight_langs.html).
+This prints a formatted colorful hello world with line-numbers (ln). The first argument after the '=' has to be a valid programming language parseable by highlight (http://www.andre-simon.de/doku/highlight/highlight_langs.html).
 
 CODE_START=C
 printf("hello world\n");
@@ -172,8 +139,7 @@ This prints a colorful hello world in c.
 
 3.2. USAGE SCENARIOS
 
-Because it is always quite helpful to give some examples, I will provide
-some everyday scenarios. You can also receive some information with "bzg help".
+Because it is always quite helpful to give some examples, I will provide some everyday scenarios. You can also receive some information with "bzg help".
 
 For example, we want to add a new article based on a template:
 
@@ -210,10 +176,7 @@ For example, we want to add a new article based on a template:
 
 4. CREDITS
 
-Special thanks to Linus Torvalds for creating git. It helped me a lot.
-Thanks to the people over there at nanoblogger.
-Thanks to Andre Simon for creating highlight.
-Thanks to stefan-k for giving me the hint with the LaTeX- and gnuplot-integration :).
+Special thanks to Linus Torvalds for creating git. It helped me a lot. Thanks to the people over there at nanoblogger. Thanks to Andre Simon for creating highlight. Thanks to stefan-k for giving me the hint with the LaTeX- and gnuplot-integration :).
 
 4.1. LICENSE
 
