@@ -382,10 +382,10 @@ sub push_bazinga {
     print "\n";
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; rm -rf articles tags pages css index.html feed.xml' | ncftp -u " .  $CONF_HASH{'push_login'} .
-            " -p $password " . $CONF_HASH{'push_host'} . " -P " .  $CONF_HASH{'push_port'} . " > /dev/null 2> /dev/null;");
+            " -p $password " . " -P " .  $CONF_HASH{'push_port'} . " " .  $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; mput -R *' | ncftp -u " .  $CONF_HASH{'push_login'} .
-            " -p $password " . $CONF_HASH{'push_host'} . " -P " .  $CONF_HASH{'push_port'} . " > /dev/null 2> /dev/null;");
+            " -p $password " . " -P " .  $CONF_HASH{'push_port'} . " " .  $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
     print " >> Push done!\n";
 }
 
