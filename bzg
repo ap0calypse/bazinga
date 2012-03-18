@@ -377,15 +377,15 @@ sub push_bazinga {
           $CONF_HASH{'push_path'} . "\n";
     print "Please enter your password (won't be echoed): ";
     system('stty','-echo');
-    chop(my $password=<STDIN>);
+    chomp(my $password=<STDIN>);
     system('stty','echo');
     print "\n";
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; rm -rf articles tags pages css index.html feed.xml' | ncftp -u " .  $CONF_HASH{'push_login'} .
-            " -p $password " . " -P " .  $CONF_HASH{'push_port'} . " " .  $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
+            " -p '$password' " . " -P " .  $CONF_HASH{'push_port'} . " " .  $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; mput -R *' | ncftp -u " .  $CONF_HASH{'push_login'} .
-            " -p $password " . " -P " .  $CONF_HASH{'push_port'} . " " .  $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
+            " -p '$password' " . " -P " .  $CONF_HASH{'push_port'} . " " .  $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
     print " >> Push done!\n";
 }
 
