@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 use strict;
 use File::Copy;
-use Storable;
+use Storable qw(nstore retrieve);
 use Env qw(HOME USERNAME);
 use v5.10;
 
@@ -16,7 +16,7 @@ use v5.10;
 # version info, config locations, ...
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $VERSION = "0.3.6";
+my $VERSION = "0.3.7";
 my $BAZDIR = "$HOME/.bazinga";
 my $CONFIG = "$BAZDIR/bazinga.conf";
 my $CSS = "$BAZDIR/style.css";
@@ -76,6 +76,7 @@ while (<$CONFFD>) {
     $CONF_HASH{'latex_dpi'} = $1 if m/.*LATEX_DPI: *\"(.+)\".*/;
     $CONF_HASH{'push_host'} = $1 if m/.*PUSH_HOST: *\"(.+)\".*/;
     $CONF_HASH{'push_login'} = $1 if m/.*PUSH_LOGIN: *\"(.+)\".*/;
+    $CONF_HASH{'push_passwd'} = $1 if m/.*PUSH_PASSWD: *\"(.+)\".*/;
     $CONF_HASH{'push_path'} = $1 if m/.*PUSH_PATH: *\"(.+)\".*/;
     $CONF_HASH{'push_port'} = $1 if m/.*PUSH_PORT: *\"(.+)\".*/;
 }
@@ -375,11 +376,17 @@ sub push_bazinga {
     my $port = 21 unless $CONF_HASH{'push_port'};
     print " >> Pushing to: " . $CONF_HASH{'push_host'} . " into directory " .
           $CONF_HASH{'push_path'} . "\n";
-    print "Please enter your password (won't be echoed): ";
-    system('stty','-echo');
-    chomp(my $password=<STDIN>);
-    system('stty','echo');
-    print "\n";
+    my $password;
+    if ($CONF_HASH{'push_passwd'}) {
+        $password = $CONF_HASH{'push_passwd'};
+    }
+    else {
+        print "Please enter your password (won't be echoed): ";
+        system('stty','-echo');
+        chomp($password=<STDIN>);
+        system('stty','echo');
+        print "\n";
+    }
     system("echo 'lcd " . $CONF_HASH{'blog_directory'} . "; cd " . 
             $CONF_HASH{'push_path'} . "; rm -rf articles tags pages css index.html feed.xml' | ncftp -u " .  $CONF_HASH{'push_login'} .
             " -p '$password' " . " -P " .  $CONF_HASH{'push_port'} . " " .  $CONF_HASH{'push_host'} . " > /dev/null 2> /dev/null;");
@@ -513,7 +520,7 @@ sub add_content {
     }
     if ($add) {
         update_git($BZG_HASH->{$type}{$random}{'title'}, "added");
-        store $BZG_HASH, $BZG_FILE;
+        nstore $BZG_HASH, $BZG_FILE;
         print " >> Added '$random' to $type.\n";
     }
 }
@@ -582,7 +589,7 @@ sub delete_content {
                 update_git($BZG_HASH->{'pages'}{$key}{'title'}, "deleted");
                 delete $BZG_HASH->{'pages'}{$key};
                 print " >> Deleted page '$key'\n";
-                store $BZG_HASH, $BZG_FILE;
+                nstore $BZG_HASH, $BZG_FILE;
             }
         }
     }
@@ -592,7 +599,7 @@ sub delete_content {
                 update_git($BZG_HASH->{'articles'}{$key}{'title'}, "deleted");
                 delete $BZG_HASH->{'articles'}{$key};
                 print " >> Deleted article '$key'\n";
-                store $BZG_HASH, $BZG_FILE;
+                nstore $BZG_HASH, $BZG_FILE;
             }
         }
     }
@@ -619,7 +626,7 @@ sub tag_article {
         $BZG_HASH->{'articles'}{$tag_complete}{'tags'} = $tags;
         print " >> Tagged article '$tag_complete'.\n";
         update_git($BZG_HASH->{'articles'}{$tag_complete}{'title'}, "tagged");
-        store $BZG_HASH, $BZG_FILE;
+        nstore $BZG_HASH, $BZG_FILE;
     }
     else {
         print " !! Article $tag_id doesn't exist, please check.\n";
