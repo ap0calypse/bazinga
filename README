@@ -129,7 +129,7 @@ CODE_START=perl=ln
 print "hello world\n";
 CODE_END
 
-This prints a formatted colorful hello world with line-numbers (ln). The first argument after the '=' has to be a valid programming language parseable by highlight (http://www.andre-simon.de/doku/highlight/highlight_langs.html).
+This prints a formatted colorful hello world with line-numbers (ln). The first argument after the '=' has to be a valid programming language parseable by highlight (http://www.andre-simon.de/doku/highlight/en/langs.html).
 
 CODE_START=C
 printf("hello world\n");
