@@ -86,8 +86,10 @@ close $CONFFD;
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # param check, we die if there is the wrong count
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-die " !! Not enough parameters given, try 'bzg help' for a quick overview.\n" if scalar @ARGV < 1;
+if (scalar @ARGV < 1) {
+    print_usage();
+    exit 0;
+}
 die " !! Configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
 die " !! Index template $TEMPLATEFILE doesn't exist or isn't readable, please check.\n" unless (-e $TEMPLATEFILE);
 mkdir $TMP_LOCATION unless -d $TMP_LOCATION;
