@@ -14,6 +14,10 @@ BLOG_TITLE: "/home/ap0calypse"
 # blog subtitle
 BLOG_SUBTITLE: "21 is only half the truth ..."
 
+# other stuff
+# max entries of articles on main page
+MAX_ARTICLES_MAIN: "5"
+
 # blog look and feel
 LATEX_FGCOLOR: "rgb 1.0 1.0 1.0"
 LATEX_BGCOLOR: "Transparent"

@@ -71,6 +71,7 @@ while (<$CONFFD>) {
     $CONF_HASH{'blog_owner'} = $1 if m/.*BLOG_OWNER: *\"(.+)\".*/;
     $CONF_HASH{'blog_email'} = $1 if m/.*BLOG_EMAIL: *\"(.+)\".*/;
     $CONF_HASH{'blog_website'} = $1 if m/.*BLOG_WEBSITE: *\"(.+)\".*/;
+    $CONF_HASH{'max_main'} = $1 if m/.*MAX_ARTICLES_MAIN: *\"(.+)\".*/;
     $CONF_HASH{'latex_fgcolor'} = $1 if m/.*LATEX_FGCOLOR: *\"(.+)\".*/;
     $CONF_HASH{'latex_bgcolor'} = $1 if m/.*LATEX_BGCOLOR: *\"(.+)\".*/;
     $CONF_HASH{'latex_dpi'} = $1 if m/.*LATEX_DPI: *\"(.+)\".*/;
@@ -909,7 +910,10 @@ sub generate_index {
             for (keys %{$BZG_HASH->{'articles'}}) {
                 push @{$date_hash{$BZG_HASH->{'articles'}{$_}{'date'} . " " . $BZG_HASH->{'articles'}{$_}{'time'}}}, $_;
             }
+            my $counter = 0;
             for (reverse sort keys %date_hash) {
+                $counter++;
+                last if $counter > $CONF_HASH{'max_main'};
                 for my $id (@{$date_hash{$_}}) {
                     my $dirstring = $BZG_HASH->{'articles'}{$id}{'title'};
                     my ($year, $month, $day) = split (/-/, $BZG_HASH->{'articles'}{$id}{'date'});
