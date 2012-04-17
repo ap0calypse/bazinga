@@ -1054,6 +1054,18 @@ sub convert_text {
             next;
         }
 
+        if (m/INSERT_GPG/) {
+            $finaltext .= "<pre>\n";
+            my $gpgout = `gpg --armor --export $CONF_HASH{'blog_email'}`;
+            my @gpg_a = split /\n/, $gpgout;
+            for (@gpg_a) {
+                $finaltext .= "$_\n";
+            }
+            $finaltext .= "</pre>\n";
+            next;
+        }
+
+
         if ($in_latex) {
             print $LATEXFD $_ . "\n";
         }

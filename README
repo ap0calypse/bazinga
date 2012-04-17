@@ -13,6 +13,7 @@ README file for bazinga
 3.1.2. . LaTeX-insertion
 3.1.3. . Gnuplot-insertion
 3.1.4. . Code-insertion
+3.1.5. . GPG-insertion
 3.2. ... Usage Scenarios
 4. ..... Credits
 4.1. ... License
@@ -136,6 +137,14 @@ printf("hello world\n");
 CODE_END
 
 This prints a colorful hello world in c.
+
+
+3.1.5. GPG-INSERTION
+
+bazinga has a nifty feature, that allows you to insert your public signature in a page. 
+Just enter the keyword INSERT_GPG anwhere you want and it will be replaced by the signature
+that links to the mail adress given in the config.
+
 
 3.2. USAGE SCENARIOS
 
