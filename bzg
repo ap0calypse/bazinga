@@ -16,7 +16,7 @@ use v5.10;
 # version info, config locations, ...
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $VERSION = "0.3.7";
+my $VERSION = "0.3.8";
 my $BAZDIR = "$HOME/.bazinga";
 my $CONFIG = "$BAZDIR/bazinga.conf";
 my $CSS = "$BAZDIR/style.css";
