@@ -1070,9 +1070,10 @@ sub convert_text {
             print $LATEXFD $_ . "\n";
         }
         elsif ($in_code) {
-            $_ =~ s/'/´/gmx;
-            $finaltext .= `echo '$_' | highlight -s 'bclear' -I -f -l -m $line_number --inline-css -S $code_lang` if $want_ln;
-            $finaltext .= `echo '$_' | highlight -s 'bclear' -I -f --inline-css -S $code_lang` unless $want_ln;
+            $_ =~ s/"/\\"/gmx;
+            $_ =~ s/\$/dolsign/gmx;
+            $finaltext .= `echo "$_" | sed -e 's/\"/"/g' | sed -e 's/dolsign/\$/g' | highlight -s 'bclear' -I -f -l -m $line_number --inline-css -S $code_lang` if $want_ln;
+            $finaltext .= `echo "$_" | sed -e 's/\"/"/g' | sed -e 's/dolsign/\$/g' | highlight -s 'bclear' -I -f --inline-css -S $code_lang` unless $want_ln;
             $line_number++;
         }
         elsif ($in_gnuplot) {
