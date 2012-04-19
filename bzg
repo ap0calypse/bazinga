@@ -16,15 +16,14 @@ use v5.10;
 # version info, config locations, ...
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $VERSION = "0.3.8";
+my $VERSION = "0.4.0";
 my $BAZDIR = "$HOME/.bazinga";
 my $CONFIG = "$BAZDIR/bazinga.conf";
 my $CSS = "$BAZDIR/style.css";
 my $BZG_FILE = "$BAZDIR/bazinga.dat";
 my $TMP_LOCATION = "$BAZDIR/temp";
 my $TEMPLATEFILE = "$BAZDIR/index.template";
-my %CONF_HASH;
-my %TAG_HASH;
+my (%CONF_HASH, %TAG_HASH);
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -80,6 +79,7 @@ while (<$CONFFD>) {
     $CONF_HASH{'push_passwd'} = $1 if m/.*PUSH_PASSWD: *\"(.+)\".*/;
     $CONF_HASH{'push_path'} = $1 if m/.*PUSH_PATH: *\"(.+)\".*/;
     $CONF_HASH{'push_port'} = $1 if m/.*PUSH_PORT: *\"(.+)\".*/;
+    $CONF_HASH{'hl_theme'} = $1 if m/.*HIGHLIGHT_THEME: *\"(.+)\".*/;
 }
 close $CONFFD;
 
@@ -87,10 +87,8 @@ close $CONFFD;
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # param check, we die if there is the wrong count
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-if (scalar @ARGV < 1) {
-    print_usage();
-    exit 0;
-}
+
+print_usage() and exit if scalar @ARGV < 1;
 die " !! Configuration file $CONFIG doesn't exist or isn't readable, please check.\n" unless (-e $CONFIG);
 die " !! Index template $TEMPLATEFILE doesn't exist or isn't readable, please check.\n" unless (-e $TEMPLATEFILE);
 mkdir $TMP_LOCATION unless -d $TMP_LOCATION;
@@ -333,31 +331,32 @@ sub update_git {
 sub create_feed {
     my $feedfile = $CONF_HASH{'blog_directory'} . "/feed.xml";
     open my $FEEDFD, "> $feedfile" or die " >> Can't open $feedfile: $!\n";
-    print $FEEDFD "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" .
-                  "<rss version=\"2.0\">\n" .
-                  "<channel>\n";
-    print $FEEDFD "<title>" . $CONF_HASH{'blog_title'} . "</title>\n";
-    print $FEEDFD "<link>" . $CONF_HASH{'blog_website'} . "</link>\n";
-    print $FEEDFD "<description>" . $CONF_HASH{'blog_subtitle'} . "</description>\n";
-    print $FEEDFD "<language>en</language>\n";
-    print $FEEDFD "<copyright>" . $CONF_HASH{'blog_owner'} . "</copyright>\n";
+    print $FEEDFD "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
+                . "<rss version=\"2.0\">\n"
+                . "<channel>\n"
+                . "<title>" . $CONF_HASH{'blog_title'} . "</title>\n"
+                . "<link>" . $CONF_HASH{'blog_website'} . "</link>\n"
+                . "<description>" . $CONF_HASH{'blog_subtitle'} . "</description>\n"
+                . "<language>en</language>\n"
+                . "<copyright>" . $CONF_HASH{'blog_owner'} . "</copyright>\n";
     for (sort { $BZG_HASH->{'articles'}{$b}{'date'} cmp $BZG_HASH->{'articles'}{$a}{'date'} } keys %{$BZG_HASH->{'articles'}}) {
-        print $FEEDFD "<item>\n";
-        print $FEEDFD "<title>" . $BZG_HASH->{'articles'}{$_}{'title'} . "</title>\n";
+        print $FEEDFD "<item>\n"
+                    . "<title>" . $BZG_HASH->{'articles'}{$_}{'title'} . "</title>\n";
+
         my ($year, $month, $day) = split (/-/, $BZG_HASH->{'articles'}{$_}{'date'});
         my $link = $BZG_HASH->{'articles'}{$_}{'title'};
+
         $link =~ s/ +/-/g;
         $link =~ s/[^a-z0-9A-Z-]//g;
         $link = lc(substr($link, 0, 30));
-        print $FEEDFD "<link>" .  $CONF_HASH{'blog_website'} . "/articles/$year/$month/$day/$link.html</link>\n";
-        print $FEEDFD "<author>" . $BZG_HASH->{'articles'}{$_}{'author'} . "</author>\n";
-        print $FEEDFD "<description>" . conv2meta($BZG_HASH->{'articles'}{$_}{'text'}) . "</description>\n";
-        print $FEEDFD "<pubDate>" . $BZG_HASH->{'articles'}{$_}{'date'} . "</pubDate>\n";
-        print $FEEDFD "<guid>" .  $CONF_HASH{'blog_website'} . "/articles/$year/$month/$day/$link.html</guid>\n";
-        print $FEEDFD "</item>\n";
+        print $FEEDFD "<link>" .  $CONF_HASH{'blog_website'} . "/articles/$year/$month/$day/$link.html</link>\n"
+                    . "<author>" . $BZG_HASH->{'articles'}{$_}{'author'} . "</author>\n"
+                    . "<description>" . conv2meta($BZG_HASH->{'articles'}{$_}{'text'}) . "</description>\n"
+                    . "<pubDate>" . $BZG_HASH->{'articles'}{$_}{'date'} . "</pubDate>\n"
+                    . "<guid>" .  $CONF_HASH{'blog_website'} . "/articles/$year/$month/$day/$link.html</guid>\n"
+                    . "</item>\n";
     }
-    print $FEEDFD "</channel>\n";
-    print $FEEDFD "</rss>\n";
+    print $FEEDFD "</channel>\n</rss>\n";
     close $FEEDFD;
 }
 
@@ -455,16 +454,15 @@ sub print_usage {
 sub list_contents {
     print "Articles:\n" . "* " x 20 . "\n";
     for (sort { $BZG_HASH->{'articles'}{$a}{'date'} cmp  $BZG_HASH->{'articles'}{$b}{'date'} } keys %{$BZG_HASH->{'articles'}}) {
-        print " $_ ($BZG_HASH->{'articles'}{$_}{'title'})";
-        print " from: $BZG_HASH->{'articles'}{$_}{'author'} - $BZG_HASH->{'articles'}{$_}{'date'}";
-        print " $BZG_HASH->{'articles'}{$_}{'time'}\n";
+        print " $_ ($BZG_HASH->{'articles'}{$_}{'title'})"
+            . " from: $BZG_HASH->{'articles'}{$_}{'author'} - $BZG_HASH->{'articles'}{$_}{'date'}"
+            . " $BZG_HASH->{'articles'}{$_}{'time'}\n";
     }
-    print "\n\n";
-    print "Pages:\n" . "* " x 20 . "\n";
+    print "\n\nPages:\n" . "* " x 20 . "\n";
     for (sort { $BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'} } keys %{$BZG_HASH->{'pages'}}) {
-        print " $_ ($BZG_HASH->{'pages'}{$_}{'title'})";
-        print " from: $BZG_HASH->{'pages'}{$_}{'author'} - $BZG_HASH->{'pages'}{$_}{'date'}";
-        print " $BZG_HASH->{'pages'}{$_}{'time'}\n";
+        print " $_ ($BZG_HASH->{'pages'}{$_}{'title'})"
+            . " from: $BZG_HASH->{'pages'}{$_}{'author'} - $BZG_HASH->{'pages'}{$_}{'date'}"
+            . " $BZG_HASH->{'pages'}{$_}{'time'}\n";
     }
     print "\n\n";
 }
@@ -518,8 +516,7 @@ sub add_content {
         print " >> Content file seems to be correct.\n";
     }
     else {
-        print " !! Content file is corrupt, please check.\n";
-        exit;
+        print " !! Content file is corrupt, please check.\n" and exit;
     }
     if ($add) {
         update_git($BZG_HASH->{$type}{$random}{'title'}, "added");
@@ -543,33 +540,33 @@ sub export_content {
     if (exists $BZG_HASH->{'pages'}) {
         for $key (keys %{$BZG_HASH->{'pages'}}) {
             if ($key =~ m/^$export_id.*/) {
-                print "category: \"pages\"\n";
-                print "author: \"" . $BZG_HASH->{'pages'}{$key}{'author'} . "\"\n";
-                print "website: \"" . $BZG_HASH->{'pages'}{$key}{'website'} . "\"\n";
-                print "email: \"" . $BZG_HASH->{'pages'}{$key}{'email'} . "\"\n";
-                print "title: \"" . $BZG_HASH->{'pages'}{$key}{'title'} . "\"\n";
-                print "date: \"" . $BZG_HASH->{'pages'}{$key}{'date'} . "\"\n";
-                print "time: \"" . $BZG_HASH->{'pages'}{$key}{'time'} . "\"\n\n";
-                print "START_TEXT\n";
-                print $BZG_HASH->{'pages'}{$key}{'text'};
-                print "END_TEXT\n";
+                print "category: \"pages\"\n"
+                    . "author: \"" . $BZG_HASH->{'pages'}{$key}{'author'} . "\"\n"
+                    . "website: \"" . $BZG_HASH->{'pages'}{$key}{'website'} . "\"\n"
+                    . "email: \"" . $BZG_HASH->{'pages'}{$key}{'email'} . "\"\n"
+                    . "title: \"" . $BZG_HASH->{'pages'}{$key}{'title'} . "\"\n"
+                    . "date: \"" . $BZG_HASH->{'pages'}{$key}{'date'} . "\"\n"
+                    . "time: \"" . $BZG_HASH->{'pages'}{$key}{'time'} . "\"\n\n"
+                    . "START_TEXT\n"
+                    . $BZG_HASH->{'pages'}{$key}{'text'}
+                    . "END_TEXT\n";
             }
         }
     }
     if (exists $BZG_HASH->{'articles'}) {
         for $key (keys %{$BZG_HASH->{'articles'}}) {
             if ($key =~ m/^$export_id.*/) {
-                print "category: \"articles\"\n";
-                print "author: \"" . $BZG_HASH->{'articles'}{$key}{'author'} . "\"\n";
-                print "website: \"" . $BZG_HASH->{'articles'}{$key}{'website'} . "\"\n";
-                print "email: \"" . $BZG_HASH->{'articles'}{$key}{'email'} . "\"\n";
-                print "title: \"" . $BZG_HASH->{'articles'}{$key}{'title'} . "\"\n";
-                print "date: \"" . $BZG_HASH->{'articles'}{$key}{'date'} . "\"\n";
-                print "time: \"" . $BZG_HASH->{'articles'}{$key}{'time'} . "\"\n";
-                print "tags: \"" . $BZG_HASH->{'articles'}{$key}{'tags'} . "\"\n\n";
-                print "START_TEXT\n";
-                print $BZG_HASH->{'articles'}{$key}{'text'};
-                print "END_TEXT\n";
+                print "category: \"articles\"\n"
+                    . "author: \"" . $BZG_HASH->{'articles'}{$key}{'author'} . "\"\n"
+                    . "website: \"" . $BZG_HASH->{'articles'}{$key}{'website'} . "\"\n"
+                    . "email: \"" . $BZG_HASH->{'articles'}{$key}{'email'} . "\"\n"
+                    . "title: \"" . $BZG_HASH->{'articles'}{$key}{'title'} . "\"\n"
+                    . "date: \"" . $BZG_HASH->{'articles'}{$key}{'date'} . "\"\n"
+                    . "time: \"" . $BZG_HASH->{'articles'}{$key}{'time'} . "\"\n"
+                    . "tags: \"" . $BZG_HASH->{'articles'}{$key}{'tags'} . "\"\n\n"
+                    . "START_TEXT\n"
+                    . $BZG_HASH->{'articles'}{$key}{'text'}
+                    . "END_TEXT\n";
             }
         }
     }
@@ -632,8 +629,7 @@ sub tag_article {
         nstore $BZG_HASH, $BZG_FILE;
     }
     else {
-        print " !! Article $tag_id doesn't exist, please check.\n";
-        exit 5;
+        print " !! Article $tag_id doesn't exist, please check.\n" and exit 5;
     }
 }
 
@@ -664,8 +660,7 @@ sub replace_content {
         add_content(1, $path, $full_id);
     }
     else {
-        print " !! Content with id $id doesn't exist, please check.\n";
-        exit 5;
+        print " !! Content with id $id doesn't exist, please check.\n" and exit 5;
     }
 }
 
@@ -1009,7 +1004,6 @@ sub convert_text {
             else {
                 $finaltext .= "<br /><img src='./$dirstring/img/$latex_present-latex.png' alt='$latex_present' /><br />\n";
             }
-
             next;
         }
         if (m/^LATEX_END *$/) {
@@ -1072,8 +1066,8 @@ sub convert_text {
         elsif ($in_code) {
             $_ =~ s/"/\\"/gmx;
             $_ =~ s/\$/dolsign/gmx;
-            $finaltext .= `echo "$_" | sed -e 's/\"/"/g' | sed -e 's/dolsign/\$/g' | highlight -s 'bclear' -I -f -l -m $line_number --inline-css -S $code_lang` if $want_ln;
-            $finaltext .= `echo "$_" | sed -e 's/\"/"/g' | sed -e 's/dolsign/\$/g' | highlight -s 'bclear' -I -f --inline-css -S $code_lang` unless $want_ln;
+            $finaltext .= `echo "$_" | sed -e 's/\"/"/g' | sed -e 's/dolsign/\$/g' | highlight -s '$CONF_HASH{'hl_theme'}' -I -f -l -m $line_number --inline-css -S $code_lang` if $want_ln;
+            $finaltext .= `echo "$_" | sed -e 's/\"/"/g' | sed -e 's/dolsign/\$/g' | highlight -s '$CONF_HASH{'hl_theme'}' -I -f --inline-css -S $code_lang` unless $want_ln;
             $line_number++;
         }
         elsif ($in_gnuplot) {
