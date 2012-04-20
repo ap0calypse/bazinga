@@ -16,7 +16,7 @@ use v5.10;
 # version info, config locations, ...
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-my $VERSION = "0.4.0";
+my $VERSION = "0.4.1";
 my $BAZDIR = "$HOME/.bazinga";
 my $CONFIG = "$BAZDIR/bazinga.conf";
 my $CSS = "$BAZDIR/style.css";
@@ -455,13 +455,13 @@ sub list_contents {
     print "Articles:\n" . "* " x 20 . "\n";
     for (sort { $BZG_HASH->{'articles'}{$a}{'date'} cmp  $BZG_HASH->{'articles'}{$b}{'date'} } keys %{$BZG_HASH->{'articles'}}) {
         print " $_ ($BZG_HASH->{'articles'}{$_}{'title'})"
-            . " from: $BZG_HASH->{'articles'}{$_}{'author'} - $BZG_HASH->{'articles'}{$_}{'date'}"
+            . " [$BZG_HASH->{'articles'}{$_}{'tags'}] - $BZG_HASH->{'articles'}{$_}{'date'}"
             . " $BZG_HASH->{'articles'}{$_}{'time'}\n";
     }
     print "\n\nPages:\n" . "* " x 20 . "\n";
     for (sort { $BZG_HASH->{'pages'}{$a}{'title'} cmp $BZG_HASH->{'pages'}{$b}{'title'} } keys %{$BZG_HASH->{'pages'}}) {
         print " $_ ($BZG_HASH->{'pages'}{$_}{'title'})"
-            . " from: $BZG_HASH->{'pages'}{$_}{'author'} - $BZG_HASH->{'pages'}{$_}{'date'}"
+            . " - $BZG_HASH->{'pages'}{$_}{'date'}"
             . " $BZG_HASH->{'pages'}{$_}{'time'}\n";
     }
     print "\n\n";
