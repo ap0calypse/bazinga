@@ -19,7 +19,7 @@ BLOG_SUBTITLE: "21 is only half the truth ..."
 MAX_ARTICLES_MAIN: "5"
 
 # color theme for syntax highlighting
-# for a complete list, exxecute "highlight --list-themes"
+# for a complete list, execute "highlight --list-themes"
 HIGHLIGHT_THEME: "zenburn"
 
 # blog look and feel
